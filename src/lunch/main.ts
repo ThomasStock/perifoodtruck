@@ -272,7 +272,7 @@ function renderMenu() {
           }
           const quantity =
             cart.find((l) => l.productId === p.id)?.quantity ?? 0;
-          return `<button type="button" class="product" data-plus="${p.id}" aria-label="Add ${esc(p.name)}"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${p.promotion ? '<span class="promotion">1 + 1 free</span><small class="deal-detail">2 pieces for this price</small>' : ""}${p.description ? `<p class="product-description">${esc(p.description)}</p>` : ""}${quantity ? `<span class="in-cart">${quantity * (p.promotion ? 2 : 1)} in your basket</span>` : ""}</div>${image}</button>`;
+          return `<button type="button" class="product" data-plus="${p.id}" aria-label="Add ${esc(p.name)}"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${p.description ? `<p class="product-description">${esc(p.description)}</p>` : ""}${quantity ? `<span class="in-cart">${quantity} in your basket</span>` : ""}</div>${image}</button>`;
         })
         .join("")
     : '<div class="menu-empty"><h3>No products</h3><p>Choose another category.</p></div>';

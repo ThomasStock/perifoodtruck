@@ -298,7 +298,7 @@ test("recovery preserves the reserved price; leaving without a trailer cannot pl
   );
 });
 
-test("1+1 offers preserve paid prices and record free portions only for regular Frikandel and Kipkorn", () => {
+test("Frikandel and Kipkorn remain available at regular prices without free portions", () => {
   const priced = priceCart([
     { productId: "frikandel", quantity: 2 },
     { productId: "kipkorn", quantity: 1 },
@@ -306,17 +306,14 @@ test("1+1 offers preserve paid prices and record free portions only for regular 
   ]);
   assert.deepEqual(
     priced.lines.map((l) => l.freeQuantity ?? 0),
-    [2, 1, 0],
+    [0, 0, 0],
   );
   assert.equal(priced.subtotalCents, 1400);
   assert.equal(priced.totalCents, 1550);
-  assert.deepEqual(
-    MENU.filter((p) => p.promotion).map((p) => p.id),
-    ["frikandel", "kipkorn"],
-  );
+
 });
 
-test("backend freezes free portions at reservation and preserves them in placed orders", async () => {
+test("backend places regular portions without promotional extras", async () => {
   const { t, alice } = setup();
   await alice.mutation(fn("join"), { session: "a" });
   await put(t, "alice@example.com", { phase: "kiosk", driver: KIOSK });
@@ -335,7 +332,7 @@ test("backend freezes free portions at reservation and preserves them in placed 
   await alice.mutation(fn("move"), { session: "a", truck, driver: KIOSK });
   const s = await alice.query(world, {});
   assert.equal(s.orders[0].lines[0].quantity, 2);
-  assert.equal(s.orders[0].lines[0].freeQuantity, 2);
+  assert.equal(s.orders[0].lines[0].freeQuantity, undefined);
   assert.equal(s.orders[0].totalCents, 950);
 });
 

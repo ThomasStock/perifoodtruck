@@ -16,7 +16,6 @@ export type Product = {
   cents: number;
   photo: Photo | null;
   description?: string;
-  promotion?: "1+1";
 };
 const photo = (
   source: string,
@@ -43,9 +42,6 @@ function products(
     cents,
     photo,
     category,
-    ...(["frikandel", "kipkorn"].includes(id)
-      ? { promotion: "1+1" as const }
-      : {}),
     ...(description ? { description } : {}),
   }));
 }
@@ -304,7 +300,6 @@ export function priceCart(cart: CartItem[]) {
       quantity,
       name: product.name,
       unitCents: product.cents,
-      ...(product.promotion === "1+1" ? { freeQuantity: quantity } : {}),
     };
   });
   if (lines.reduce((sum, l) => sum + l.quantity, 0) > 50)
