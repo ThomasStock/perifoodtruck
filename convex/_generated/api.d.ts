@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as food from "../food.js";
 import type * as leaderboard from "../leaderboard.js";
 
 import type {
@@ -17,6 +18,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  food: typeof food;
   leaderboard: typeof leaderboard;
 }>;
 

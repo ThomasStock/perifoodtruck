@@ -1,3 +1,11 @@
+# Perifoodtruck · The Lunch Yard
+
+The new multiplayer lunch-ordering game is the default app. See [setup, Google SSO, Convex deployment, and gameplay](docs/lunch-yard.md). Run `npm ci` and `npm run dev` for the local preview.
+
+The original yard game documentation follows for reference.
+
+---
+
 # Perifoodtruck
 
 Independent copy of ThomasStock/peritruck, based on commit 3af6c5f.
