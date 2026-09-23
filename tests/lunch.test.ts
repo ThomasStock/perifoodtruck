@@ -684,3 +684,18 @@ test("walking outside the exit remains valid and multiplayer persists cab transi
   await alice.mutation(fn("cab"), { session: "a" });
   assert.equal((await alice.query(world, {})).me.onFoot, false);
 });
+
+test("E prioritizes trailer attachment over leaving a stopped truck", () => {
+  const p = newPlayer("driver@example.com");
+  p.phase = "pickup";
+  p.parking = 2;
+  p.truck = { ...spawn(), ...PARKINGS[2], trailerHeading: 0, speed: 0 };
+  assert.equal(interaction(p), "Attach your lunch trailer");
+  interact(p);
+  assert.equal(p.phase, "exit");
+  assert.equal(walking(p), false);
+  assert.equal(interaction(p), "Get out of your truck");
+  interact(p);
+  assert.equal(walking(p), true);
+  assert.equal(attached(p), true);
+});

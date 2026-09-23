@@ -285,7 +285,7 @@ export function objective(p: Player): {
   if (p.onFoot)
     return {
       title: "Explore on foot",
-      detail: "Walk back to your truck and press E or G to get in.",
+      detail: "Walk back to your truck and press E to get in.",
       target: p.truck,
       step: p.phase === "pickup" ? 3 : 4,
     };
@@ -294,7 +294,7 @@ export function objective(p: Player): {
       return {
         title: "Park beside the kiosk",
         detail:
-          "Stop anywhere and press E or G to get out. P02 is close to the kiosk.",
+          "Stop anywhere and press E to get out. P02 is close to the kiosk.",
         target: PARK,
         step: 1,
       };

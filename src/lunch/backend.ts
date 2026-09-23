@@ -6,7 +6,6 @@ import {
   normalizeParking,
   exited,
   interact,
-  toggleCab,
   recover,
   KIOSK,
   newPlayer,
@@ -19,8 +18,7 @@ import { distance } from "../game/simulation";
 export interface Backend {
   move(truck: Truck, driver: Point): Promise<void>;
   action(
-    name:
-      "cab" | "interact" | "leaveKiosk" | "reserve" | "recover" | "cancelOrder",
+    name: "interact" | "leaveKiosk" | "reserve" | "recover" | "cancelOrder",
     cart?: CartItem[],
   ): Promise<void>;
   throwBurger(target: Point): Promise<void>;
@@ -154,7 +152,6 @@ export function preview(
       if (spectatorFixture && name !== "recover") return;
       const p = state.me;
       if (name === "interact") interact(p);
-      if (name === "cab") toggleCab(p);
       if (name === "recover") recover(p);
       if (name === "cancelOrder") {
         state.orders = state.orders.filter((o) => o.email !== p.email);
