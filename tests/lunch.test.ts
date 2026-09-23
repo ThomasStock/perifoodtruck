@@ -115,7 +115,7 @@ test("parking, walking to kiosk, and own-trailer alignment govern interactions",
   assert.equal(p.phase, "kiosk");
   p.phase = "pickup";
   p.parking = 2;
-  p.truck = { ...spawn(), ...PARKINGS[2], trailerHeading: 0 };
+  p.truck = { ...spawn(), ...PARKINGS[2], trailerHeading: 0, speed: -0.3 };
   assert.equal(pickupReady(p), true);
   p.truck.heading = Math.PI;
   assert.equal(pickupReady(p), false);
@@ -183,6 +183,7 @@ test("kiosk confirmation reserves only; collection and whole-trailer exit place 
       ...spawn(),
       x: PARKINGS[s.me.parking!].x,
       z: PARKINGS[s.me.parking!].z,
+      speed: -0.3,
       heading: 0,
       trailerHeading: 0,
     },
@@ -333,4 +334,35 @@ test("backend freezes free portions at reservation and preserves them in placed 
   assert.equal(s.orders[0].lines[0].quantity, 2);
   assert.equal(s.orders[0].lines[0].freeQuantity, 2);
   assert.equal(s.orders[0].totalCents, 900);
+});
+
+test("pickup accepts an angled reverse approach but rejects forward ramming and blocks trailer penetration", () => {
+  const p = newPlayer("a@example.com");
+  p.phase = "pickup";
+  p.parking = 2;
+  p.truck = {
+    ...spawn(),
+    x: PARKINGS[2].x + 1,
+    z: PARKINGS[2].z + 1,
+    heading: 0.75,
+    trailerHeading: 0,
+    speed: -0.3,
+  };
+  assert.equal(pickupReady(p), true);
+  p.truck.speed = 0.3;
+  assert.equal(pickupReady(p), false);
+  p.truck = {
+    ...spawn(),
+    x: PARKINGS[2].x,
+    z: PARKINGS[2].z + 4,
+    heading: 0,
+    trailerHeading: 0,
+  };
+  const input = idleInput();
+  input.throttle = -1;
+  for (let i = 0; i < 600; i++) drive(p, input, 1 / 60);
+  assert.ok(
+    p.truck.z > PARKINGS[2].z - 1,
+    "own trailer blocks reversing through its body",
+  );
 });

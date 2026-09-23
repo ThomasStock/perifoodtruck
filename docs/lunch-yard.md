@@ -8,11 +8,11 @@ Entry point: `src/lunch/main.ts`. The game reuses the original yard, truck model
 
 1. Sign in with Google. Your verified email appears on your truck and trailer.
 2. Start without a trailer. Park on P02, stop, press E, and walk to the kiosk.
-3. Choose from Frieten, Burgers, Snacks, and Sauzen. The menu includes 75 items, excludes Friet maison, and charges €1 per order. Sauces and toppings cost €1.20 per pot, except the two speciaal combinations at €2.20. Frikandel and Kipkorn have 1 + 1 gratis: each basket increment buys a duo for one unit price. Stored lines keep paid quantity and optional free quantity separately; old orders retain their original quantities. The order board shows total portions and the paid/free split.
+3. Click anywhere on a menu card to add an item. Choose from Fries, Burgers, Snacks, and Sauces. The menu includes 75 items, excludes Friet maison, and charges €1 per order. Sauces and toppings cost €1.20 per pot, except the two speciaal combinations at €2.20. Frikandel and Kipkorn have 1 + 1 gratis: each basket increment buys a duo for one unit price. Stored lines keep paid quantity and optional free quantity separately; old orders retain their original quantities. The order board shows total portions and the paid/free split.
 4. Confirm at the kiosk to reserve a named trailer. This does **not** place the order. Walk back to the truck, press E, and follow the pickup marker.
 5. The gate is already open. Docks are closed for lunch. No PIN or yard assistant.
-6. Face south and reverse the tractor into your trailer's hitch; stop and press E. Parking is allocated randomly among free spaces, with overlaps only once all six spaces are occupied.
-7. Drive through the marked east exit. The entire attached trailer must clear the fence before the server records the order, exactly once.
+6. Reverse gently towards your trailer’s front and press E while moving slowly. Angled approaches up to roughly 60 degrees are accepted; the trailer body blocks penetration. Parking is allocated randomly among free spaces, with overlaps only once all six spaces are occupied.
+7. Drive into the large outlined and tinted area at the east exit. The entire attached trailer must clear the fence before the server records the order, exactly once.
 8. Continue exploring as a ghost. Rejoining restores progress or the placed order.
 
 Other players, walkers, and trailers are translucent and nonblocking. The shared board lists placed quantities, per-person items, fees, and totals; your email is highlighted. Unplaced menu contents are private. One active driving tab per Google account; another tab takes over control.

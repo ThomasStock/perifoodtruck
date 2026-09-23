@@ -137,6 +137,31 @@ export class LunchScene {
         this.base.scene.add(line);
       }
     }
+    const exitFill = new THREE.Mesh(
+      new THREE.PlaneGeometry(28, 24),
+      new THREE.MeshBasicMaterial({
+        color: "#00b38e",
+        transparent: true,
+        opacity: 0.18,
+        depthWrite: false,
+      }),
+    );
+    exitFill.rotation.x = -Math.PI / 2;
+    exitFill.position.set(68, 0.09, 34);
+    this.base.scene.add(exitFill);
+    for (const [x, z, w, d] of [
+      [54, 34, 0.25, 24],
+      [82, 34, 0.25, 24],
+      [68, 22, 28, 0.25],
+      [68, 46, 28, 0.25],
+    ]) {
+      const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(w, 0.02, d),
+        new THREE.MeshBasicMaterial({ color: "#b6ffe1" }),
+      );
+      stripe.position.set(x, 0.12, z);
+      this.base.scene.add(stripe);
+    }
     for (const z of [22, 46]) {
       const post = new THREE.Mesh(
         new THREE.BoxGeometry(0.4, 5, 0.4),
@@ -355,6 +380,6 @@ export class LunchScene {
       target: obj.target,
       attached: attached(local),
     });
-    this.base.target.visible = guiding;
+    this.base.target.visible = guiding && local.phase !== "exit";
   }
 }

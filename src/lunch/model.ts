@@ -85,14 +85,22 @@ export function parked(p: Player) {
     )
   );
 }
+export function pickupBody(p: Player): Rect | null {
+  const bay = PARKINGS.find((b) => b.id === p.parking);
+  return p.phase === "pickup" && bay
+    ? { x: bay.x, z: bay.z - 6.7, w: 2.55, d: 9, h: 0 }
+    : null;
+}
 export function pickupReady(p: Player) {
   const bay = PARKINGS.find((b) => b.id === p.parking);
   return (
     p.phase === "pickup" &&
     !!bay &&
-    distance(p.truck, bay) < 2.4 &&
-    Math.abs(angle(p.truck.heading)) < 0.3 &&
-    Math.abs(p.truck.speed) < 0.35
+    distance(p.truck, bay) < 3.6 &&
+    Math.abs(angle(p.truck.heading)) < 1.1 &&
+    p.truck.speed < -0.05 &&
+    p.truck.speed > -1.2 &&
+    !overlap(rigRects(p.truck)[0], pickupBody(p)!)
   );
 }
 export function exited(p: Player) {
@@ -151,6 +159,7 @@ export function drive(p: Player, input: Input, dt: number) {
   const before = { ...p.truck };
   integrate(p.truck, input, attached(p), dt);
   if (!attached(p)) p.truck.trailerHeading = p.truck.heading;
+  const body = pickupBody(p);
   const shapes = rigRects(p.truck).slice(0, attached(p) ? 2 : 1);
   const outside = shapes
     .flatMap(corners)
@@ -165,6 +174,7 @@ export function drive(p: Player, input: Input, dt: number) {
   const path = rect(-32.5, 39, 2.6, 39);
   if (
     outside ||
+    (!!body && overlap(shapes[0], body)) ||
     shapes.some((s) => [...OBSTACLES, path].some((o) => overlap(s, o))) ||
     (attached(p) &&
       Math.abs(angle(p.truck.heading - p.truck.trailerHeading)) > 1.12 &&
@@ -249,7 +259,7 @@ export function objective(p: Player): {
       return {
         title: `Collect your trailer · L0${(p.parking ?? 0) + 1}`,
         detail:
-          "The gate is open. Find your name, face your cab south and reverse towards the hitch.",
+          "Find your trailer and back gently towards its front. Press E while reversing slowly. A slight angle is fine.",
         target: PARKINGS[p.parking ?? 0],
         step: 3,
       };
@@ -257,8 +267,8 @@ export function objective(p: Player): {
       return {
         title: "Drive to the exit",
         detail:
-          "Follow EXIT to the opening in the right-hand fence. Your order is placed once your entire trailer is outside.",
-        target: EXIT,
+          "Drive into the marked exit area through the right-hand fence. Bring your entire trailer inside to place your order.",
+        target: { x: 68, z: EXIT.z },
         step: 4,
       };
     case "complete":
@@ -266,7 +276,7 @@ export function objective(p: Player): {
         title: "Your order is placed!",
         detail:
           "Thanks! Your lunch is on the order list. You can keep driving as a ghost.",
-        target: EXIT,
+        target: { x: 68, z: EXIT.z },
         step: 4,
       };
   }

@@ -624,20 +624,19 @@ dialog ol {
   border-radius: 10px;
   align-self: center;
 }
-.add-product {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  background: #fff;
-  border: 1px solid #e5e8dc;
-  color: #008c76;
-  box-shadow: 0 3px 7px #29553d12;
-  font-size: 25px;
-  width: 33px;
-  height: 33px;
-  padding: 0;
-  border-radius: 50%;
-  z-index: 2;
+.product {
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.product:hover {
+  border-color: #008d72;
+  background: #f3faf6;
+}
+.product:focus-visible {
+  outline: 3px solid #008d72;
+  outline-offset: -3px;
 }
 .in-cart {
   display: block;
@@ -1068,4 +1067,13 @@ dialog ol {
   line-height: 1.5;
   margin-top: 4px;
   color: #537263;
+}
+
+/* Hide the old menu screenshot's corner control while retaining its food photo. */
+.menu-photo {
+  mask-image: radial-gradient(
+    circle at top right,
+    transparent 22px,
+    black 23px
+  );
 }
