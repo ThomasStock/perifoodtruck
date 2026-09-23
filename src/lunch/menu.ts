@@ -1,6 +1,6 @@
 /** Prices and original photographs transcribed from the supplied menu screenshots.
  * Screenshots stay intact; the UI crops them with CSS, preserving the actual photos.
- * Promotional pricing awaits confirmation.
+ * Frikandel and Kipkorn include one free portion per paid portion.
  */
 export const CATEGORIES = ["Frieten", "Burgers", "Snacks", "Sauzen"] as const;
 export type Category = (typeof CATEGORIES)[number];
@@ -16,6 +16,7 @@ export type Product = {
   cents: number;
   photo: Photo | null;
   description?: string;
+  promotion?: "1+1";
 };
 const photo = (
   source: string,
@@ -42,6 +43,9 @@ function products(
     cents,
     photo,
     category,
+    ...(["frikandel", "kipkorn"].includes(id)
+      ? { promotion: "1+1" as const }
+      : {}),
     ...(description ? { description } : {}),
   }));
 }
@@ -274,7 +278,11 @@ export const MENU: Product[] = [
   ]),
 ];
 export type CartItem = { productId: string; quantity: number };
-export type OrderLine = CartItem & { name: string; unitCents: number };
+export type OrderLine = CartItem & {
+  name: string;
+  unitCents: number;
+  freeQuantity?: number;
+};
 export const ORDER_FEE_CENTS = 100;
 export function priceCart(cart: CartItem[]) {
   if (!Array.isArray(cart) || cart.length < 1 || cart.length > MENU.length)
@@ -296,6 +304,7 @@ export function priceCart(cart: CartItem[]) {
       quantity,
       name: product.name,
       unitCents: product.cents,
+      ...(product.promotion === "1+1" ? { freeQuantity: quantity } : {}),
     };
   });
   if (lines.reduce((sum, l) => sum + l.quantity, 0) > 50)

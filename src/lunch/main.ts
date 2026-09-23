@@ -212,7 +212,7 @@ function lineHtml(lines: OrderLine[], editable = false) {
   return lines
     .map(
       (l) =>
-        `<div class="order-line"><div><b>${esc(l.name)}</b><small>${euro(l.unitCents)} per stuk</small></div>${editable ? `<div class="quantity"><button data-minus="${l.productId}" aria-label="Minder ${esc(l.name)}">−</button><span>${l.quantity}</span><button data-plus="${l.productId}" aria-label="Meer ${esc(l.name)}">+</button></div>` : `<span>× ${l.quantity}</span>`}<strong>${euro(l.unitCents * l.quantity)}</strong></div>`,
+        `<div class="order-line"><div><b>${esc(l.name)}</b><small>${euro(l.unitCents)} per ${l.freeQuantity ? "duo" : "stuk"}</small>${l.freeQuantity ? `<small class="deal-detail">${l.quantity} betaald + ${l.freeQuantity} gratis · ${l.quantity + l.freeQuantity} stuks</small>` : ""}</div>${editable ? `<div class="quantity"><button data-minus="${l.productId}" aria-label="Minder ${esc(l.name)}">−</button><span>${l.quantity}</span><button data-plus="${l.productId}" aria-label="Meer ${esc(l.name)}">+</button></div>` : `<span>× ${l.quantity + (l.freeQuantity ?? 0)}</span>`}<strong>${euro(l.unitCents * l.quantity)}</strong></div>`,
     )
     .join("");
 }
@@ -241,7 +241,7 @@ function renderMenu() {
           }
           const quantity =
             cart.find((l) => l.productId === p.id)?.quantity ?? 0;
-          return `<article class="product"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${p.description ? `<p class="product-description">${esc(p.description)}</p>` : ""}${quantity ? `<span class="in-cart">${quantity} in je mandje</span>` : ""}</div>${image}<button class="add-product" data-plus="${p.id}" aria-label="Voeg ${esc(p.name)} toe">+</button></article>`;
+          return `<article class="product"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${p.promotion ? '<span class="promotion">1 + 1 gratis</span><small class="deal-detail">2 stuks voor deze prijs</small>' : ""}${p.description ? `<p class="product-description">${esc(p.description)}</p>` : ""}${quantity ? `<span class="in-cart">${quantity * (p.promotion ? 2 : 1)} in je mandje</span>` : ""}</div>${image}<button class="add-product" data-plus="${p.id}" aria-label="Voeg ${esc(p.name)} toe">+</button></article>`;
         })
         .join("")
     : '<div class="menu-empty"><h3>Geen producten</h3><p>Kies een andere categorie.</p></div>';
@@ -344,15 +344,23 @@ function paint() {
           ? "Nog niet geplaatst. Rijd met je trailer door UITRIT."
           : "Frieten · Burgers · Snacks · Sauzen";
     $("order-count").textContent = String(state.orders.length);
-    const counts = new Map<string, { name: string; quantity: number }>();
+    const counts = new Map<
+      string,
+      { name: string; quantity: number; free: number }
+    >();
     for (const o of state.orders)
       for (const l of o.lines) {
-        const row = counts.get(l.productId) ?? { name: l.name, quantity: 0 };
+        const row = counts.get(l.productId) ?? {
+          name: l.name,
+          quantity: 0,
+          free: 0,
+        };
         row.quantity += l.quantity;
+        row.free += l.freeQuantity ?? 0;
         counts.set(l.productId, row);
       }
     $("orders-content").innerHTML = state.orders.length
-      ? `<section class="order-totals"><h3>Te bestellen</h3>${[...counts.values()].map((l) => `<div><span>${esc(l.name)}</span><b>× ${l.quantity}</b></div>`).join("")}<div><span>Bestelkosten · ${state.orders.length} bestellingen</span><b>${euro(state.orders.reduce((sum, o) => sum + o.feeCents, 0))}</b></div><div class="grand-total"><span>Totaal</span><b>${euro(state.orders.reduce((sum, o) => sum + o.totalCents, 0))}</b></div></section>${state.orders.map((o) => `<section class="person-order ${o.email === p.email ? "you" : ""}"><h3>${esc(o.email)} ${o.email === p.email ? "<small>JIJ</small>" : ""}</h3>${lineHtml(o.lines)}${totalsHtml(o.subtotalCents, o.feeCents, o.totalCents)}</section>`).join("")}`
+      ? `<section class="order-totals"><h3>Te bestellen</h3>${[...counts.values()].map((l) => `<div><span>${esc(l.name)}</span><b>× ${l.quantity + l.free}${l.free ? ` <small>(${l.quantity} betaald + ${l.free} gratis)</small>` : ""}</b></div>`).join("")}<div><span>Bestelkosten · ${state.orders.length} bestellingen</span><b>${euro(state.orders.reduce((sum, o) => sum + o.feeCents, 0))}</b></div><div class="grand-total"><span>Totaal</span><b>${euro(state.orders.reduce((sum, o) => sum + o.totalCents, 0))}</b></div></section>${state.orders.map((o) => `<section class="person-order ${o.email === p.email ? "you" : ""}"><h3>${esc(o.email)} ${o.email === p.email ? "<small>JIJ</small>" : ""}</h3>${lineHtml(o.lines)}${totalsHtml(o.subtotalCents, o.feeCents, o.totalCents)}</section>`).join("")}`
       : '<div class="empty">Nog geen geplaatste bestellingen.<br>Rijd met je trailer door de uitgang om jouw lunch toe te voegen.</div>';
   }
   const pos = scene.project(obj.target);

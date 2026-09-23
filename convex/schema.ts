@@ -6,6 +6,7 @@ const lunchLine = v.object({
   quantity: v.number(),
   name: v.string(),
   unitCents: v.number(),
+  freeQuantity: v.optional(v.number()),
 });
 const truckPose = v.object({
   x: v.number(),

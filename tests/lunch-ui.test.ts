@@ -93,10 +93,18 @@ test("UI: kiosk totals include one fee, reservation closes kiosk without placing
     doc.querySelector('[data-plus="speciaal-curryketchup"]') as HTMLElement
   ).click();
   assert.match(doc.getElementById("cart-totals")!.textContent!, /12,00/);
+  (doc.querySelector('[data-category="Snacks"]') as HTMLElement).click();
+  assert.equal(doc.querySelectorAll(".promotion").length, 2);
+  (doc.querySelector('[data-plus="frikandel"]') as HTMLElement).click();
+  assert.match(
+    doc.getElementById("cart-lines")!.textContent!,
+    /1 betaald \+ 1 gratis · 2 stuks/,
+  );
+  assert.match(doc.getElementById("cart-totals")!.textContent!, /15,10/);
   await run("action('reserve')");
   assert.equal(doc.getElementById("kiosk-dialog")!.hasAttribute("open"), false);
   assert.equal(doc.getElementById("order-count")!.textContent, "0");
-  assert.match(doc.getElementById("receipt-total")!.textContent!, /12,00/);
+  assert.match(doc.getElementById("receipt-total")!.textContent!, /15,10/);
   assert.equal(run("state.me.phase"), "walk-truck");
   assert.match(doc.getElementById("pickup-location")!.textContent!, /L0/);
   dom.window.close();

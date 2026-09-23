@@ -1050,3 +1050,22 @@ dialog ol {
   color: #658079;
   margin: 8px 0 0;
 }
+
+.promotion {
+  display: block;
+  width: fit-content;
+  margin-top: 8px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #ffda70;
+  color: #59410e;
+  font-size: 11px;
+  font-weight: 700;
+}
+.deal-detail {
+  display: block;
+  font-size: 10px;
+  line-height: 1.5;
+  margin-top: 4px;
+  color: #537263;
+}
