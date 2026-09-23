@@ -1,3 +1,4 @@
+import type { Object3D } from "three";
 import { blendPoint, blendTruck, distance } from "../game/simulation";
 import type { Player } from "./model";
 type Pose = Pick<Player, "truck" | "driver">;
@@ -39,4 +40,18 @@ export class RemoteMotion {
       driver: blendPoint(a.driver, b.driver, t),
     };
   }
+}
+
+/** Apply the network pose to cloned vehicle roots. */
+export function applyRemoteTruckPose(
+  cab: Object3D,
+  trailer: Object3D,
+  pose: Player["truck"],
+) {
+  cab.position.set(pose.x, 0, pose.z);
+  // Quaternion-to-Euler conversion during cloning can leave X/Z at pi.
+  // Replace all axes; changing only Y can point the clone backwards.
+  cab.rotation.set(0, pose.heading, 0);
+  trailer.position.copy(cab.position);
+  trailer.rotation.set(0, pose.trailerHeading, 0);
 }

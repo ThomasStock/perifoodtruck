@@ -21,7 +21,7 @@ test("a remote walker faces its observed movement with no local keyboard input",
   );
 });
 
-import { RemoteMotion } from "../src/lunch/remote-motion";
+import { RemoteMotion, applyRemoteTruckPose } from "../src/lunch/remote-motion";
 import { newPlayer } from "../src/lunch/model";
 test("remote trucks preserve forward/reverse heading and cross the angle seam without spinning", () => {
   const p = newPlayer("remote@example.com");
@@ -69,4 +69,49 @@ test("remote walking interpolates between packets; recovery snaps instead of sli
   p.driver.x = 40;
   p.updatedAt = 3;
   assert.equal(motion.sample(p, 240).driver.x, 40);
+});
+
+function assertFacing(root: THREE.Object3D, heading: number) {
+  const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(root.quaternion);
+  const expected = new THREE.Vector3(Math.sin(heading), 0, Math.cos(heading));
+  assert.ok(
+    forward.distanceTo(expected) < 1e-6,
+    `wrong direction: ${forward.toArray()} instead of ${expected.toArray()}`,
+  );
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(root.quaternion);
+  assert.ok(up.distanceTo(new THREE.Vector3(0, 1, 0)) < 1e-6);
+}
+test("remote cab and trailer face their own heading regardless of the cloned local heading", () => {
+  for (const localHeading of [Math.PI, -2.5, -1, 0, 1, 2.5]) {
+    const local = new THREE.Group();
+    local.rotation.y = localHeading;
+    const cab = local.clone(),
+      trailer = local.clone();
+    for (const heading of [0, 0.7, Math.PI, -2.5]) {
+      const pose = {
+        ...newPlayer("remote@example.com").truck,
+        heading,
+        trailerHeading: heading - 0.3,
+      };
+      applyRemoteTruckPose(cab, trailer, pose);
+      assertFacing(cab, heading);
+      assertFacing(trailer, pose.trailerHeading);
+    }
+  }
+});
+test("a walker cloned from a turned local driver stays upright and faces its actual movement", () => {
+  const local = new THREE.Group();
+  local.rotation.y = Math.PI;
+  const remote = local.clone();
+  const rig = new DriverRig(remote);
+  rig.bind();
+  const state = createState();
+  state.phase = "walk-kiosk";
+  state.driver = { x: 0, z: 0 };
+  rig.update(state, idleInput(), 1 / 60, false);
+  for (let i = 1; i <= 180; i++) {
+    state.driver.z = i * 0.05;
+    rig.update(state, idleInput(), 1 / 60, false);
+  }
+  assertFacing(remote, 0);
 });

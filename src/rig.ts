@@ -138,7 +138,8 @@ export class DriverRig {
       t = this.clock,
       phone = this.phone;
     this.root.position.set(x, motion * g * (0.035 - 0.075 * swing * swing), z);
-    this.root.rotation.y = this.heading;
+    // Remote roots may be cloned from a turned driver; clear inherited X/Z.
+    this.root.rotation.set(0, this.heading, 0);
     const { body, head } = this.part;
     const legL = this.part["leg-left"],
       legR = this.part["leg-right"],

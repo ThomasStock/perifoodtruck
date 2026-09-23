@@ -1,4 +1,4 @@
-import { RemoteMotion } from "./remote-motion";
+import { RemoteMotion, applyRemoteTruckPose } from "./remote-motion";
 import { BurgerLitter } from "./burger-litter";
 import type { Burger } from "./burgers";
 import * as THREE from "three";
@@ -327,10 +327,7 @@ export class LunchScene {
       }
       const smoothed = v.motion.sample(p, performance.now());
       v.pose = smoothed.truck;
-      v.cab.position.set(v.pose.x, 0, v.pose.z);
-      v.cab.rotation.y = v.pose.heading;
-      v.trailer.position.copy(v.cab.position);
-      v.trailer.rotation.y = v.pose.trailerHeading;
+      applyRemoteTruckPose(v.cab, v.trailer, v.pose);
       v.trailer.visible = attached(p);
       v.wheels.update(v.pose);
       for (const name of ["steering-left", "steering-right"]) {
