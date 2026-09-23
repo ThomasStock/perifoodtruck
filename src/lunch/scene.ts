@@ -304,7 +304,7 @@ export class LunchScene {
         const root = new THREE.Group(),
           cab = clone(this.base.tractor, 0.38),
           trailer = clone(this.base.trailer, 0.38),
-          driver = clone(this.base.driver, 0.55),
+          driver = clone(this.base.driver, 0.85),
           name = label(p.email);
         const rig = new DriverRig(driver);
         rig.bind();
