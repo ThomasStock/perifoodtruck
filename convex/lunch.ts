@@ -118,6 +118,20 @@ export const world = query({
     };
   },
 });
+// Guest ghosts can watch the yard, but never read emails, orders or sessions.
+export const spectatorWorld = query({
+  args: {},
+  handler: async (ctx) => ({
+    players: (await ctx.db.query("lunchPlayers").collect()).map((p) => ({
+      ...publicPlayer(p),
+      email: `${p.email.split("@")[0]}@${p._id}`,
+      lines: [],
+      subtotalCents: 0,
+      feeCents: 0,
+      totalCents: 0,
+    })),
+  }),
+});
 export const move = mutation({
   args: { session: v.string(), truck: pose, driver: point },
   handler: async (ctx, { session, truck, driver }) => {

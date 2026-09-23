@@ -4,7 +4,13 @@ import "@fontsource/montserrat/700.css";
 import "./style.css";
 import { canThrow, closestBurger } from "./burgers";
 import { LunchScene } from "./scene";
-import { connect, preview, googleButton, type Backend } from "./backend";
+import {
+  connect,
+  preview,
+  spectate,
+  googleButton,
+  type Backend,
+} from "./backend";
 import {
   savedCredential,
   rememberCredential,
@@ -127,20 +133,25 @@ async function start(token?: string, spectator = false) {
     backend = null;
     state = null;
     restorePose = true;
-    previewMode = !token;
+    previewMode = !token && !(spectator && import.meta.env.VITE_CONVEX_URL);
     lastReceipt = "";
     backend = token
       ? await connect(import.meta.env.VITE_CONVEX_URL, token, receive, (e) => {
           toast(message(e));
           signout(false);
         })
-      : preview(
-          receive,
-          import.meta.env.DEV &&
-            new URLSearchParams(window.location.search).get("preview") ===
-              "kiosk",
-          spectator,
-        );
+      : spectator && import.meta.env.VITE_CONVEX_URL
+        ? spectate(import.meta.env.VITE_CONVEX_URL, receive, (e) => {
+            toast(message(e));
+            signout(false);
+          })
+        : preview(
+            receive,
+            import.meta.env.DEV &&
+              new URLSearchParams(window.location.search).get("preview") ===
+                "kiosk",
+            spectator,
+          );
     try {
       cart = JSON.parse(
         localStorage.getItem(`lunch-draft:${state!.me.email}`) ?? "[]",

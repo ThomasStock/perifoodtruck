@@ -74,6 +74,16 @@ async function game(auth?: {
       if (id === "./backend")
         return {
           preview,
+          spectate: (_url: string, receive: Parameters<typeof preview>[0]) =>
+            preview(
+              (s) =>
+                receive({
+                  ...s,
+                  players: [{ ...s.me, email: "other@guest.local" }],
+                }),
+              false,
+              true,
+            ),
           connect: async (
             _url: string,
             _token: string,
@@ -248,7 +258,7 @@ test("UI: Space and mobile control stay turbo in both spectator and active drivi
   dom.window.close();
 });
 
-test("hidden C hold starts an isolated spectator without Google or preview persistence", async () => {
+test("hidden C hold starts a live spectator without Google or preview persistence", async () => {
   const { dom, run, doc } = await game({});
   await run(
     'window.dispatchEvent(new window.KeyboardEvent("keydown", { key: "c" })); frame(performance.now() + 500)',
@@ -272,6 +282,7 @@ test("hidden C hold starts an isolated spectator without Google or preview persi
   await new Promise<void>((resolve) => setImmediate(resolve));
   assert.equal(doc.getElementById("login")!.hidden, true);
   assert.equal(await run("state.me.phase"), "complete");
+  assert.equal(await run("state.players.length"), 1);
   assert.equal(doc.getElementById("receipt")!.hidden, true);
   assert.equal(dom.window.localStorage.getItem("lunch-kiosk-preview"), null);
   assert.equal(

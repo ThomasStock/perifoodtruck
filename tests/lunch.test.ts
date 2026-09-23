@@ -699,3 +699,17 @@ test("E prioritizes trailer attachment over leaving a stopped truck", () => {
   assert.equal(walking(p), true);
   assert.equal(attached(p), true);
 });
+
+test("guest spectators see multiplayer poses without private emails or orders", async () => {
+  const { t, alice } = setup();
+  await alice.mutation(fn("join"), { session: "a" });
+  const watch = makeFunctionReference<"query">("lunch:spectatorWorld");
+  const first = await t.query(watch, {});
+  assert.equal(first.players.length, 1);
+  assert.equal(first.players[0].email.split("@")[0], "alice");
+  assert.ok(!JSON.stringify(first).includes("alice@example.com"));
+  assert.ok(!JSON.stringify(first).includes('"session"'));
+  assert.deepEqual(first.players[0].lines, []);
+  await put(t, "alice@example.com", { truck: { ...spawn(), z: 50 } });
+  assert.equal((await t.query(watch, {})).players[0].truck.z, 50);
+});

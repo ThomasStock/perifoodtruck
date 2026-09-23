@@ -87,6 +87,49 @@ export async function connect(
     throw error;
   }
 }
+export function spectate(
+  url: string,
+  onChange: (s: Snapshot) => void,
+  onError: (e: Error) => void,
+): Backend {
+  const client = new ConvexClient(url);
+  const me = newPlayer("spectator@guest.local");
+  me.phase = "complete";
+  let players: Snapshot["players"] = [];
+  const publish = () => onChange(structuredClone({ me, players, orders: [] }));
+  publish();
+  const off = client.onUpdate(
+    makeFunctionReference<
+      "query",
+      Record<string, never>,
+      { players: Snapshot["players"] }
+    >("lunch:spectatorWorld"),
+    {},
+    (world) => {
+      players = world.players;
+      publish();
+    },
+    onError,
+  );
+  return {
+    async move(truck, driver) {
+      me.truck = { ...truck };
+      me.driver = { ...driver };
+    },
+    async action(name) {
+      if (name === "interact") interact(me);
+      if (name === "recover") recover(me);
+      publish();
+    },
+    async throwBurger() {},
+    async cleanBurger() {},
+    close() {
+      off();
+      void client.close();
+    },
+  };
+}
+
 export function preview(
   onChange: (s: Snapshot) => void,
   kioskFixture = false,
