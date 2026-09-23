@@ -8,6 +8,7 @@ OUT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../public/models'
 os.makedirs(OUT, exist_ok=True)
 # Optional asset names after Blender's `--` keep unrelated GLBs untouched.
 ONLY = set(sys.argv[sys.argv.index('--')+1:]) if '--' in sys.argv else set()
+LUNCH = 'yard-lunch' in ONLY
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
 
@@ -180,6 +181,9 @@ box('Diorama base',(0,-1.5,13),(120,2.5,149),'grassDark',1.5)
 box('Meadow',(0,-.22,13),(119,.25,148),'grass',.5)
 box('Asphalt',(0,-.12,13),(105,.16,135),'asphalt',.7)
 box('North apron',(0,.005,-29),(101,.05,30),'concrete')
+if LUNCH:
+    box('Lunch exit road',(66,-.09,34),(31,.16,24),'asphalt',.2)
+    box('Exit road foundation',(70,-1.5,34),(38,2.5,26),'grassDark',.4)
 # expansion joints
 for x in range(-50,51,10):box('Apron joint',(x,.035,-29),(.045,.005,30),'roof')
 for z in [-42,-32,-22]:box('Apron joint',(0,.035,z),(100,.005,.045),'roof')
@@ -280,10 +284,14 @@ def fence(x1,z1,x2,z2):
     for i in range(int(length/.52)):
         t=i/max(1,int(length/.52));box('Fence picket',(x1+(x2-x1)*t,1.15,z1+(z2-z1)*t),(.022,1.85,.022),'roof')
 fence(-52,12,11.6,12);fence(24,12,52,12)
-fence(-52,-44,-52,76);fence(52,-44,52,76)
+fence(-52,-44,-52,76)
+if LUNCH:
+    fence(52,-44,52,22);fence(52,46,52,76)
+else:fence(52,-44,52,76)
 fence(-52,76,-33,76);fence(-13,76,52,76)
 # Trees outside truck circulation
 for x,z in [(-57,z) for z in [-42,-24,-3,17,44,66]]+[(57,z) for z in [-38,-16,5,29,52,73]]:
+    if LUNCH and x>52 and 22<z<46:continue
     cyl('Tree trunk',(x,1.7,z),.33,3.4,'bark',vertices=8)
     for dx,dy,dz,r in [(0,4.8,0,2.6),(-.9,4.1,.6,1.9),(1.1,4.4,-.5,2.0)]:
         bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2,radius=r,location=pos(x+dx,dy,z+dz))
@@ -305,7 +313,7 @@ for x,z in [(-30,60),(-18,60),(26,19),(10,19),(40,-38)]:
     bpy.ops.mesh.primitive_cone_add(vertices=16,radius1=.24,radius2=.055,depth=.7,location=pos(x,.49,z))
     bpy.context.object.data.materials.append(M['orange'])
     cyl('Cone reflector',(x,.53,z),.155,.12,'white')
-export('yard')
+export('yard-lunch' if LUNCH else 'yard')
 
 # Compact electric forklift, facing +Z. Pallet and carton stay on the forks.
 box('Forklift chassis',(0,.42,-.15),(1.32,.38,2.25),'dark',.08)

@@ -1,60 +1,36 @@
 # The Lunch Yard
 
-The live app starts in `src/food/main.ts`. It reuses the original tractor/trailer GLBs, articulated driving integrator, steering animation, and wheel animation. The original yard app remains in source for reference; it is no longer the HTML entry point.
+Entry point: `src/lunch/main.ts`. The game reuses the original yard, truck models, articulated driving physics, walking controls, and camera. `yard-lunch.glb` adds an exit in the east fence. Generate it with Blender: `blender --background --python scripts/build_models.py -- yard-lunch`.
 
-## Game
+## Lunch run
 
-- Google sign-in supplies each driver's verified email. It appears above their truck.
-- Start with a tractor. Five numbered, colored bays hold Dish 1–5 trailers.
-- Face north at a bay's HITCH ring, reverse into position, stop, and press E.
-- Claiming a trailer atomically starts a shared 5.5-second replenishment cycle. The hatch opens and its replacement rises.
-- Drive the entire trailer into the marked order area. Stop and press E to drop it off and add its dish to your basket.
-- Collect more trailers, remove basket items, or confirm from anywhere. Repeated dishes become quantities on the shared order board.
-- Confirmation is final and idempotent. Your truck becomes translucent, remains visible to others, and can drive but cannot collect or change an order.
-- Signing in again restores your basket or confirmed order. One active driving tab per Google account; joining in a second tab takes over control.
-- The order board lists confirmed quantities and emails, highlighting your own email. Draft baskets stay out of the shared order totals.
+1. Sign in with Google. Your verified email appears on your truck and trailer.
+2. Start without a trailer. Park on P02, stop, press E, and walk to the kiosk.
+3. Choose from Frieten, Burgers, Snacks, and Sauzen. The menu includes 54 pictured items, excludes Friet maison, and charges €1 per order. Sauces and promotions await the owner's details; promotional pricing is not applied.
+4. Confirm at the kiosk to reserve a named trailer. This does **not** place the order. Walk back to the truck, press E, and follow the pickup marker.
+5. The gate is already open. Docks are closed for lunch. No PIN or yard assistant.
+6. Face south and reverse the tractor into your trailer's hitch; stop and press E. Parking is allocated randomly among free spaces, with overlaps only once all six spaces are occupied.
+7. Drive through the marked east exit. The entire attached trailer must clear the fence before the server records the order, exactly once.
+8. Continue exploring as a ghost. Rejoining restores progress or the placed order.
 
-Controls: WASD/arrows, Space brake, Shift precision, E couple/drop off, C camera. Wheel zooms. Touch buttons appear on touch devices. Reset truck returns to the starting point and releases any attached trailer; delivered basket items remain.
+Other players, walkers, and trailers are translucent and nonblocking. The shared board lists placed quantities, per-person items, fees, and totals; your email is highlighted. Unplaced menu contents are private. One active driving tab per Google account; another tab takes over control.
 
-## New Convex project
+Controls: WASD/arrows, Space brake, Shift precision, E interact, C camera; wheel zoom. Touch driving buttons and a walking joystick are included. Recovering the truck preserves a reserved order and respawns its trailer at the assigned parking.
 
-Created for this game:
+## Configuration
 
-- Project: [perifoodtruck-lunch](https://dashboard.convex.dev/t/thomasstock1985/perifoodtruck-lunch)
-- Development deployment: `tangible-goat-574` (EU West)
-- Production deployment: `tacit-robin-849` (EU West)
-- Production frontend: https://foodtruck.placeholder.app (Vercel project `perifoodtruck`)
-- Local deployment settings: ignored `.env.local`
+- Repository: `ThomasStock/perifoodtruck`
+- Convex project: `perifoodtruck-lunch`, team `thomasstock1985`
+- Development: `tangible-goat-574` (EU West)
+- Production: `tacit-robin-849` (EU West)
+- Frontend: https://foodtruck.placeholder.app (Vercel project `perifoodtruck`)
+- Ignored local settings: `.env.local`
 
-Backend functions and schema are deployed. The supplied Google client ID is configured in the development frontend, Vercel production environment, and both Convex deployments. All verified Google email domains are allowed; `ALLOWED_EMAIL_DOMAIN` is unset. Google Cloud audience settings still control which accounts Google permits to sign in.
+Set `VITE_GOOGLE_CLIENT_ID` and `VITE_CONVEX_URL` on the frontend. Set the identical `GOOGLE_CLIENT_ID` on Convex. The Google OAuth web client needs the frontend origins (`http://127.0.0.1:5173`, `http://localhost:5173`, and `https://foodtruck.placeholder.app`). All verified email domains are allowed; `ALLOWED_EMAIL_DOMAIN` is unset. No client secret is used in this GIS ID-token flow. Google audience/test-user settings still control access.
 
-## Finish Google SSO
+Convex validates the Google token's signature, issuer, audience, and expiry. Application functions require verified email and check the active session. Prices, quantities, parking allocation, and final order creation are server-controlled transactions. Movement is simulated locally with server bounds and distance sanity checks, suitable for cooperative play rather than competitive anti-cheat.
 
-1. Create a Google OAuth **Web application** client. Configure your consent screen and testing users as needed. Add `http://127.0.0.1:5173`, `http://localhost:5173`, and your eventual production origin as authorized JavaScript origins.
-2. Add the public client ID to `.env.local`:
-
-   ```dotenv
-   VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
-   ```
-
-3. Replace the backend audience with the identical ID and redeploy:
-
-   ```sh
-   npx convex env set GOOGLE_CLIENT_ID YOUR_CLIENT_ID.apps.googleusercontent.com
-   npx convex dev --once
-   ```
-
-4. Recommended for colleagues-only access: set your actual company email domain on the server:
-
-   ```sh
-   npx convex env set ALLOWED_EMAIL_DOMAIN your-company.example
-   ```
-
-5. Restart Vite. Sign in using two Google accounts in separate browsers to verify live movement and shared order updates. Google JWT signature, issuer, audience and expiration are validated by Convex; the server also requires a verified email and enforces the optional domain restriction. No client secret is needed for this GIS ID-token flow. Expired sessions return to sign-in without losing the saved basket/order.
-
-References: [Google button setup](https://developers.google.com/identity/gsi/web/guides/display-button), [Convex authentication](https://docs.convex.dev/auth/advanced/custom-auth).
-
-## Run and verify
+## Verify and deploy
 
 ```sh
 npm ci
@@ -62,16 +38,16 @@ npm run dev
 npm run build
 node --import tsx --test tests/*.test.ts
 npx tsc --noEmit -p convex/tsconfig.json
+npx convex dev --once
+npx convex deploy --yes
 ```
 
-The local preview explicitly uses an isolated localStorage backend (`foodtruck-preview`). It never writes real shared orders. Development exposes this preview automatically; production exposes it only with the explicit `VITE_ENABLE_PREVIEW=true` setting. Preview orders persist locally; clear that storage key to start a fresh preview.
+Deploy production Convex before pushing the frontend to main; Vercel builds automatically. Its environment uses the production Convex URL.
 
-Tests exercise the original driving integrator, trailer geometry, authentication/domain checks, concurrent claims and replenishment, drop-off, basket quantities/removal, confirmation away from the zone, duplicate confirmation, returning ghosts, and invalid movement/delivery. The authenticated two-browser test requires the real Google client ID.
+Local preview uses isolated localStorage key `lunch-kiosk-preview` and never writes shared orders. Development exposes it automatically; production only exposes it with `VITE_ENABLE_PREVIEW=true`. For menu visual checks, open `/?preview=kiosk` in development and click Local preview. This fixture starts a fresh preview at the kiosk; the query is ignored in production. Cart drafts use `lunch-draft:<email>`.
 
-## Deployment and scope
+Tests cover original driving, kiosk interaction, authoritative prices, the fee, empty-first allocation and overflow, private drafts, reservation versus placement, full-trailer exit, idempotency, rejoining, recovery, and menu UI. Real Google authentication and two-browser visual synchronization require signed-in accounts.
 
-For a production frontend, set `VITE_GOOGLE_CLIENT_ID` and the production `VITE_CONVEX_URL`; configure `GOOGLE_CLIENT_ID` and `ALLOWED_EMAIL_DOMAIN` on the **production** Convex deployment too. Vercel currently runs `npm run build`; deploy backend changes separately with `npx convex deploy` before pushing frontend changes. The optional `build:vercel` script can deploy both during a build if a matching production Convex deploy key is configured. Add `https://foodtruck.placeholder.app` to the Google client's authorized JavaScript origins for live sign-in.
+Menu photographs use the supplied screenshots unchanged as CSS image sprites in `public/menu`. Names and prices are transcribed in `src/lunch/menu.ts`. Original `src/food` code and its Convex tables remain for historical data; the new flow uses `lunchPlayers` and `lunchOrders`.
 
-This is one lunch event per deployment. There is no ordering deadline, admin cancellation, event rotation, or checkout/payment integration yet. All authenticated allowed colleagues can see confirmed order emails, as requested.
-
-Trucks simulate locally at 60 Hz and broadcast changed positions at approximately 8 Hz, with 3-second idle heartbeats and interpolation for remote vehicles. Stale drivers disappear after 15 seconds. This is client-authoritative movement with server bounds/speed sanity checks, not a competitive anti-cheat simulation. Players do not collide with each other; shared trailer claims and ordering are server-authoritative Convex transactions. Querying the roster currently targets team-sized sessions; larger deployments should separate presence partitions from durable orders.
+This supports one lunch event per deployment. No payment, restaurant submission, deadline, cancellation, or event rotation is implemented. The order board is the list to order from the restaurant. Position broadcasts run around 8 Hz, with 3-second idle heartbeats; remote movement is interpolated and stale drivers disappear after 15 seconds. Intended for team-sized sessions.

@@ -10,6 +10,7 @@
 
 import type * as food from "../food.js";
 import type * as leaderboard from "../leaderboard.js";
+import type * as lunch from "../lunch.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   food: typeof food;
   leaderboard: typeof leaderboard;
+  lunch: typeof lunch;
 }>;
 
 /**

@@ -117,7 +117,10 @@ export class YardScene {
     emissiveIntensity: 0.3,
     roughness: 0.5,
   });
-  constructor(private container: HTMLElement) {
+  constructor(
+    private container: HTMLElement,
+    private lunchMode = false,
+  ) {
     // The drawing buffer is not preserved: keeping it costs a full-screen copy
     // every frame. Screenshots render synchronously right before reading pixels.
     this.renderer = new THREE.WebGLRenderer({
@@ -199,6 +202,7 @@ export class YardScene {
       this.scene.add(panel, lamp);
     }
     this.gate.position.set(12, 1.5, 12);
+    if (this.lunchMode) this.gateAngle = Math.PI * 0.48;
     // The arms swing as one piece: two colours, two draw calls.
     const arms = new THREE.Group();
     const armColours = ["#db694d", "#e8eee9"].map(
@@ -266,7 +270,9 @@ export class YardScene {
     const loader = new GLTFLoader();
     const [yard, tractor, trailer, driver, forklift] = await Promise.all(
       ["yard", "tractor", "trailer", "driver", "forklift"].map((n) =>
-        loader.loadAsync(`/models/${n}.glb`),
+        loader.loadAsync(
+          `/models/${this.lunchMode && n === "yard" ? "yard-lunch" : n}.glb`,
+        ),
       ),
     );
     this.scene.add(yard.scene);
@@ -312,7 +318,7 @@ export class YardScene {
     // mesh per material: 13 draw calls instead of 111 in each render pass.
     const parked = new THREE.Group();
     const tints = new Map<string, THREE.MeshStandardMaterial>();
-    for (const [i, t] of staticRigs.entries()) {
+    for (const [i, t] of (this.lunchMode ? [] : staticRigs).entries()) {
       const cab = tractor.scene.clone(true),
         box = trailer.scene.clone(true),
         color = i === 1 ? "#e7ac51" : "#486c6d";
@@ -366,7 +372,13 @@ export class YardScene {
   get cutting() {
     return this.cut !== null;
   }
-  render(s: State, input: Input, dt: number, started: boolean) {
+  render(
+    s: State,
+    input: Input,
+    dt: number,
+    started: boolean,
+    mission?: { target: { x: number; z: number }; attached: boolean },
+  ) {
     this.tractor.position.set(s.truck.x, 0, s.truck.z);
     this.tractor.rotation.y = s.truck.heading;
     for (const wheel of this.steering) wheel.rotation.y = s.truck.steer;
@@ -375,14 +387,15 @@ export class YardScene {
     this.wheels.update(s.truck, this.reducedMotion);
     this.rig.update(s, input, dt, this.reducedMotion);
     this.lamps.update(lampState(s.truck, input, started && !walking(s)));
-    this.operatorRig.stand(
-      YARD.operator.x,
-      YARD.operator.z,
-      OPERATOR_HEADING + (this.operatorPhone ? 0.25 : 0),
-      this.operatorPhone,
-      dt,
-      this.reducedMotion,
-    );
+    if (!this.lunchMode)
+      this.operatorRig.stand(
+        YARD.operator.x,
+        YARD.operator.z,
+        OPERATOR_HEADING + (this.operatorPhone ? 0.25 : 0),
+        this.operatorPhone,
+        dt,
+        this.reducedMotion,
+      );
     for (const [i, dock] of DOCKS.entries()) {
       const assigned = s.dispatched && dock.number === s.dock;
       this.dockPanels[i].material = assigned ? this.panelTeal : this.panelDark;
@@ -396,19 +409,25 @@ export class YardScene {
       dt,
     );
     this.gate.rotation.z = this.gateAngle;
-    const target = objective(s).target;
+    if (this.lunchMode) this.operator.visible = false;
+    const target = mission?.target ?? objective(s).target;
     this.target.position.set(target.x, 0, target.z);
     this.target.visible = s.phase !== "complete";
     const pulse = this.reducedMotion ? 1 : 1 + Math.sin(s.elapsed * 2) * 0.06;
     this.target.scale.setScalar(pulse);
     this.parkingHighlight.visible = s.phase === "arrive";
-    this.dockHighlight.visible = s.phase === "dock";
+    this.dockHighlight.visible = !this.lunchMode && s.phase === "dock";
     this.routeDots.update(s);
     this.prediction.visible = started && !walking(s) && s.phase !== "complete";
+    if (mission) {
+      this.trailer.visible = mission.attached;
+      this.prediction.visible = false;
+      this.route.visible = false;
+    }
     if (this.prediction.visible) this.predictionPath.update(s, input);
     const actor = walking(s) ? s.driver : s.truck;
     const focus = this.nextFocus.set(actor.x, 0, actor.z);
-    if (!walking(s)) {
+    if (!walking(s) && (!mission || mission.attached)) {
       const tail = rear(s.truck);
       focus.lerp(this.tail.set(tail.x, 0, tail.z), 0.35);
     }
