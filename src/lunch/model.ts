@@ -213,6 +213,8 @@ export function interaction(p: Player): string {
   if (p.phase === "arrive" && parked(p)) return "Get out · go to the kiosk";
   if (p.phase === "walk-kiosk" && distance(p.driver, KIOSK) < 2.4)
     return "Open lunch menu";
+  if (p.phase === "walk-kiosk" && distance(p.driver, p.truck) < 5.3)
+    return "Get back in your truck";
   if (p.phase === "walk-truck" && distance(p.driver, p.truck) < 5.3)
     return "Get in · collect your trailer";
   if (pickupReady(p)) return "Attach your lunch trailer";
@@ -224,7 +226,8 @@ export function interact(p: Player) {
   if (p.phase === "arrive") {
     p.phase = "walk-kiosk";
     p.driver = offset(p.truck, p.truck.heading + Math.PI / 2, 3);
-  } else if (p.phase === "walk-kiosk") p.phase = "kiosk";
+  } else if (p.phase === "walk-kiosk")
+    p.phase = distance(p.driver, KIOSK) < 2.4 ? "kiosk" : "arrive";
   else if (p.phase === "walk-truck") p.phase = "pickup";
   else if (p.phase === "pickup") {
     p.phase = "exit";

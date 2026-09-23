@@ -109,7 +109,10 @@ test("parking, walking to kiosk, and own-trailer alignment govern interactions",
   p.truck.z = 43;
   interact(p);
   assert.equal(p.phase, "walk-kiosk");
-  assert.throws(() => interact(p));
+  interact(p);
+  assert.equal(p.phase, "arrive", "can get back in without ordering");
+  interact(p);
+  assert.equal(p.phase, "walk-kiosk");
   p.driver = { ...KIOSK };
   interact(p);
   assert.equal(p.phase, "kiosk");

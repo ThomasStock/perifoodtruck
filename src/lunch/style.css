@@ -1171,11 +1171,11 @@ dialog ol {
 
 #burger-controls {
   position: absolute;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 95px;
+  right: 18px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
 }
 #burger-controls button {
@@ -1185,6 +1185,7 @@ dialog ol {
   box-shadow: 0 5px 18px #153e3915;
 }
 #burger-controls small {
+  display: none;
   font-size: 10px;
   color: #21483f;
   background: #ffffffda;
