@@ -27,10 +27,6 @@ import {
   interaction,
   objective,
   walking,
-  PARKINGS,
-  PARK,
-  KIOSK,
-  EXIT,
   type Snapshot,
 } from "./model";
 import { walkingJoystick } from "../walking-joystick";
@@ -49,7 +45,6 @@ $("app").innerHTML = `<div id="world"></div>
 <section id="login" class="welcome panel"><div class="eyebrow">YOUR LUNCH. YOUR DRIVE.</div><h1>Park your truck.<br><em>Pick your lunch.</em></h1><p>Order at the kiosk, collect your trailer and drive out of the yard to place your order.</p><div class="intro-steps"><span>01 · KIOSK</span><span>02 · PICKUP</span><span>03 · EXIT</span></div><div id="google-signin"></div><p id="setup-note">Loading the yard…</p><button id="preview" class="primary" hidden>Local preview ↗</button><small>Your Google email appears on your truck and trailer.</small></section>
 <aside id="mission" class="panel" hidden><div id="step" class="eyebrow"></div><h2 id="objective"></h2><p id="hint"></p><ol class="progress"><li>Parking</li><li>Kiosk</li><li>Pickup</li><li>Exit</li></ol><div id="pickup-location"></div></aside>
 <aside id="receipt" class="panel" hidden><button id="lunch-summary" aria-label="View your lunch details"><span>Your lunch</span><strong id="lunch-summary-total"></strong><span aria-hidden="true">⌄</span></button><div class="eyebrow">YOUR LUNCH</div><h3 id="receipt-status">Nothing ordered yet</h3><div id="receipt-lines"></div><div id="receipt-total"></div><p id="receipt-note"></p><button id="cancel-order" class="cancel-order" hidden>Cancel order</button><button id="start-over" class="cancel-order">Start over</button></aside>
-<button id="map-button" class="map panel" hidden aria-label="Yard overview"><canvas id="map" width="320" height="330"></canvas></button>
 <div id="target-label" hidden></div><div id="action-wrap" hidden><button id="action" class="primary"><kbd>E</kbd><span id="action-text"></span></button></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
 <footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Drive & walk</span><span><kbd>SPACE</kbd> <span id="space-label">Turbo</span></span><span><kbd>SHIFT</kbd> Precision</span></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
@@ -148,13 +143,7 @@ async function start(token?: string) {
     }
     if (token) rememberCredential(token);
     $("login").hidden = true;
-    for (const id of [
-      "mission",
-      "receipt",
-      "map-button",
-      "controls",
-      "player-menu",
-    ])
+    for (const id of ["mission", "receipt", "controls", "player-menu"])
       $(id).hidden = false;
     scene.mode = "follow";
     paint();
@@ -232,7 +221,6 @@ function signout(explicit = true) {
     "mission",
     "player-menu",
     "receipt",
-    "map-button",
     "controls",
     "touch",
     "burger-controls",
@@ -420,56 +408,6 @@ function paint() {
       : '<div class="empty">No orders placed yet.<br>Drive your trailer through the exit to add your lunch.</div>';
   }
   $("target-label").hidden = true;
-  drawMap();
-}
-function drawMap() {
-  if (!state) return;
-  const c = $<HTMLCanvasElement>("map").getContext("2d")!;
-  c.clearRect(0, 0, 320, 330);
-  const x = (n: number) => 125 + n * 2,
-    z = (n: number) => 135 + n * 2;
-  c.fillStyle = "#e2ebe5";
-  c.fillRect(x(-52), z(-44), 208, 250);
-  c.fillStyle = "#658e85";
-  c.fillRect(x(-50), z(-55), 200, 22);
-  c.strokeStyle = "#a4b7ac";
-  c.lineWidth = 2;
-  c.beginPath();
-  c.moveTo(x(-52), z(12));
-  c.lineTo(x(12), z(12));
-  c.moveTo(x(24), z(12));
-  c.lineTo(x(52), z(12));
-  c.stroke();
-  for (const b of PARKINGS) {
-    c.fillStyle = b.id === state.me.parking ? "#00a990" : "#adbbb1";
-    c.fillRect(x(b.x) - 4, z(b.z - 10), 8, 22);
-    c.fillStyle = "#234e44";
-    c.font = "10px system-ui";
-    c.textAlign = "center";
-  }
-  c.fillStyle = "#d0a854";
-  c.fillRect(x(PARK.x) - 6, z(PARK.z) - 12, 12, 26);
-  c.fillStyle = "#244e42";
-  c.fillRect(x(KIOSK.x) - 3, z(KIOSK.z) - 3, 6, 6);
-
-  c.fillStyle = "#00a990";
-  c.fillRect(x(EXIT.x), z(EXIT.z) - 12, 34, 24);
-  c.fillStyle = "#fff";
-
-  for (const p of [
-    ...state.players.filter(
-      (p) => p.email !== state!.me.email && Date.now() - p.updatedAt < 15000,
-    ),
-    state.me,
-  ]) {
-    const actor = walking(p) ? p.driver : p.truck;
-    c.beginPath();
-    c.arc(x(actor.x), z(actor.z), 4, 0, Math.PI * 2);
-    c.fillStyle = p === state.me ? "#154c42" : "#ffffff";
-    c.strokeStyle = "#154c42";
-    c.fill();
-    c.stroke();
-  }
 }
 let burgerBusy = false;
 let throwDirection = { x: 0, z: -1 };
@@ -560,9 +498,6 @@ $("camera").onclick = () => {
       : scene.mode === "overhead"
         ? "yard"
         : "follow";
-};
-$("map-button").onclick = () => {
-  scene.mode = scene.mode === "yard" ? "follow" : "yard";
 };
 $("orders-button").onclick = () => {
   keys.clear();

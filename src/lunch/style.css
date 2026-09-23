@@ -303,26 +303,6 @@ h2 {
   line-height: 1.8;
   padding: 20px 0;
 }
-.map {
-  position: absolute;
-  bottom: 93px;
-  right: 25px;
-  width: 175px;
-  padding: 14px;
-  text-align: left;
-}
-.map canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin: 4px 0;
-}
-.map small {
-  font-size: 7px;
-  color: #6b8879;
-  display: flex;
-  justify-content: space-between;
-}
 #target-label {
   position: absolute;
   transform: translate(-50%, -120%);
@@ -735,10 +715,6 @@ dialog ol {
     width: 80px;
     height: 95px;
   }
-  .map {
-    right: 17px;
-    width: 150px;
-  }
   #products {
     gap: 10px;
     padding: 4px 16px 20px;
@@ -756,9 +732,6 @@ dialog ol {
   }
   #action-wrap {
     bottom: 154px;
-  }
-  .map {
-    bottom: 155px;
   }
 }
 @media (max-width: 760px) {
@@ -849,18 +822,6 @@ dialog ol {
   }
   #receipt-note {
     font-size: 8px;
-  }
-  .map {
-    width: 125px;
-    bottom: 151px;
-    right: 12px;
-    padding: 10px;
-  }
-  .map .eyebrow {
-    font-size: 7px;
-  }
-  .map small {
-    font-size: 6px;
   }
   footer {
     height: 65px;
@@ -1184,21 +1145,6 @@ dialog ol {
     color: #008e78;
     font-size: 12px;
   }
-  .map {
-    width: auto;
-    padding: 12px 14px;
-    border-radius: 22px;
-    bottom: 151px;
-    right: 12px;
-  }
-  .map canvas,
-  .map small {
-    display: none;
-  }
-  .map .eyebrow {
-    font-size: 8px;
-    margin: 0;
-  }
   #lunch-details {
     padding: 22px;
     border-radius: 22px;
@@ -1208,24 +1154,6 @@ dialog ol {
   }
   #lunch-details .order-line {
     font-size: 12px;
-  }
-}
-
-/* A quiet, unlabeled minimap on every screen size. */
-#map-button {
-  width: 110px;
-  padding: 6px;
-  border-radius: 15px;
-}
-#map-button canvas {
-  display: block;
-  margin: 0;
-}
-@media (max-width: 760px), (pointer: coarse) and (max-width: 1100px) {
-  #map-button {
-    width: 80px;
-    padding: 4px;
-    border-radius: 12px;
   }
 }
 
