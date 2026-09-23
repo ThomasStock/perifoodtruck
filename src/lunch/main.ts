@@ -45,14 +45,14 @@ const esc = (s: string) =>
       ]!,
   );
 $("app").innerHTML = `<div id="world"></div>
-<header><a class="brand" href="/"><img src="/brand/peripass.svg" alt="Peripass"><small>LUNCH RUN</small></a><div class="top-right"><span id="connection">Welcome to the yard</span><button id="orders-button">Orders <b id="order-count">0</b></button><button id="camera" aria-label="Switch camera" title="Camera (C)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7.5 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5z"/><circle cx="12" cy="13" r="4"/></svg></button><button id="help" aria-label="How to play">?</button></div></header>
+<header><a class="brand" href="/"><img src="/brand/peripass.svg" alt="Peripass"><small>LUNCH RUN</small></a><div class="top-right"><span id="connection">Welcome to the yard</span><button id="orders-button">Orders <b id="order-count">0</b></button><button id="camera" aria-label="Switch camera" title="Camera (C)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7.5 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5z"/><circle cx="12" cy="13" r="4"/></svg></button><button id="help" aria-label="How to play">?</button><details id="player-menu" hidden><summary aria-label="Player options" title="Player options">⋯</summary><div><button id="recover">Recover truck</button><button id="signout">Sign out</button></div></details></div></header>
 <section id="login" class="welcome panel"><div class="eyebrow">YOUR LUNCH. YOUR DRIVE.</div><h1>Park your truck.<br><em>Pick your lunch.</em></h1><p>Order at the kiosk, collect your trailer and drive out of the yard to place your order.</p><div class="intro-steps"><span>01 · KIOSK</span><span>02 · PICKUP</span><span>03 · EXIT</span></div><div id="google-signin"></div><p id="setup-note">Loading the yard…</p><button id="preview" class="primary" hidden>Local preview ↗</button><small>Your Google email appears on your truck and trailer.</small></section>
 <aside id="mission" class="panel" hidden><div id="step" class="eyebrow"></div><h2 id="objective"></h2><p id="hint"></p><ol class="progress"><li>Parking</li><li>Kiosk</li><li>Pickup</li><li>Exit</li></ol><div id="pickup-location"></div></aside>
 <aside id="receipt" class="panel" hidden><button id="lunch-summary" aria-label="View your lunch details"><span>Your lunch</span><strong id="lunch-summary-total"></strong><span aria-hidden="true">⌄</span></button><div class="eyebrow">YOUR LUNCH</div><h3 id="receipt-status">Nothing ordered yet</h3><div id="receipt-lines"></div><div id="receipt-total"></div><p id="receipt-note"></p><button id="cancel-order" class="cancel-order" hidden>Cancel order</button><button id="start-over" class="cancel-order">Start over</button></aside>
 <button id="map-button" class="map panel" hidden aria-label="Yard overview"><canvas id="map" width="320" height="330"></canvas></button>
 <div id="target-label" hidden></div><div id="action-wrap" hidden><button id="action" class="primary"><kbd>E</kbd><span id="action-text"></span></button></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
-<footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Drive & walk</span><span><kbd>SPACE</kbd> <span id="space-label">Turbo</span></span><span><kbd>SHIFT</kbd> Precision</span><button id="recover">Recover truck</button><button id="signout">Sign out</button></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
+<footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Drive & walk</span><span><kbd>SPACE</kbd> <span id="space-label">Turbo</span></span><span><kbd>SHIFT</kbd> Precision</span></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
 <div id="touch" hidden><div><button data-key="a" aria-label="Left">←</button><button data-key="d" aria-label="Right">→</button></div><div><button data-key="s" aria-label="Reverse">↓</button><button data-key="w" aria-label="Forward">↑</button><button id="brake-turbo" data-key=" " aria-label="Turbo" title="Hold for turbo">⚡</button></div></div>
 <div id="burger-controls" hidden><button data-key=" " aria-label="Walking turbo" title="Hold for turbo">⚡ Turbo</button><button id="throw-burger">Throw burger</button><button id="clean-burger" hidden>Clean up <kbd>R</kbd></button><small>Mouse to aim · Click to throw</small></div><div id="walk-joystick" class="walking-joystick" aria-label="Walk" hidden><span class="joystick-knob"></span></div>
 <dialog id="kiosk-dialog"><div class="kiosk-header"><div><div class="eyebrow">PERIPASS · LUNCH KIOSK</div><h2>What are you craving?</h2></div><button id="close-kiosk" aria-label="Close kiosk">×</button></div><div class="kiosk-layout"><section class="menu"><nav aria-label="Menu categories">${CATEGORIES.map((c) => `<button data-category="${c}" class="category">${c}</button>`).join("")}</nav><div id="products"></div></section><aside class="checkout"><div class="eyebrow">YOUR ORDER</div><h3>Good food ahead.</h3><div id="cart-lines"></div><div id="cart-totals"></div><p id="cart-error" role="alert"></p><button id="reserve" class="primary" disabled>Confirm & collect trailer ↗</button><small>Your order is only placed when you drive your trailer out of the yard.</small></aside></div></dialog>
@@ -148,7 +148,13 @@ async function start(token?: string) {
     }
     if (token) rememberCredential(token);
     $("login").hidden = true;
-    for (const id of ["mission", "receipt", "map-button", "controls"])
+    for (const id of [
+      "mission",
+      "receipt",
+      "map-button",
+      "controls",
+      "player-menu",
+    ])
       $(id).hidden = false;
     scene.mode = "follow";
     paint();
@@ -224,6 +230,7 @@ function signout(explicit = true) {
   $("login").hidden = false;
   for (const id of [
     "mission",
+    "player-menu",
     "receipt",
     "map-button",
     "controls",
@@ -506,7 +513,10 @@ $("world").addEventListener("pointerdown", (event) => {
   if (target) void burgerAction(target);
 });
 $("preview").onclick = () => void start();
-$("signout").onclick = () => signout();
+$("signout").onclick = () => {
+  $<HTMLDetailsElement>("player-menu").open = false;
+  signout();
+};
 $("action").onclick = () => void action("interact");
 $("lunch-summary").onclick = () => {
   keys.clear();
@@ -533,7 +543,10 @@ $("start-over").onclick = () => {
 $("details-reset").onclick = () => $("start-over").click();
 $("confirm-reset").onclick = () => void action("cancelOrder");
 $("confirm-cancel").onclick = () => void action("cancelOrder");
-$("recover").onclick = () => void action("recover");
+$("recover").onclick = () => {
+  $<HTMLDetailsElement>("player-menu").open = false;
+  void action("recover");
+};
 $("close-kiosk").onclick = () => void action("leaveKiosk");
 $("reserve").onclick = () => void action("reserve");
 $<HTMLDialogElement>("kiosk-dialog").addEventListener("cancel", (e) => {

@@ -1289,3 +1289,44 @@ dialog ol {
 #world.burger-aim canvas {
   cursor: crosshair;
 }
+
+#player-menu {
+  position: relative;
+}
+#player-menu summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #d8e3de;
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+}
+#player-menu summary::-webkit-details-marker {
+  display: none;
+}
+#player-menu > div {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 165px;
+  padding: 6px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 30px #153e3926;
+  display: grid;
+  gap: 4px;
+  z-index: 30;
+}
+#player-menu button {
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  font-size: 12px;
+  border: 0;
+  white-space: nowrap;
+}
