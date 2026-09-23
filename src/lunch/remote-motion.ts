@@ -9,10 +9,11 @@ export class RemoteMotion {
   private revision = -1;
   private phase = "";
   sample(p: Player, now: number): Pose {
-    if (p.updatedAt !== this.revision || p.phase !== this.phase) {
+    const phase = `${p.phase}:${!!p.onFoot}`;
+    if (p.updatedAt !== this.revision || phase !== this.phase) {
       const last = this.samples.at(-1);
       if (
-        p.phase !== this.phase ||
+        phase !== this.phase ||
         (last &&
           (distance(last.truck, p.truck) > 12 ||
             distance(last.driver, p.driver) > 12 ||
@@ -25,7 +26,7 @@ export class RemoteMotion {
         driver: { ...p.driver },
       });
       this.revision = p.updatedAt;
-      this.phase = p.phase;
+      this.phase = phase;
     }
     const target = now - 150;
     while (this.samples.length > 2 && this.samples[1].at <= target)

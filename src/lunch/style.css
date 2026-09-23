@@ -1306,3 +1306,11 @@ dialog ol {
     font-size: 11px;
   }
 }
+
+#cab-action {
+  position: fixed;
+  right: 20px;
+  bottom: 150px;
+  z-index: 5;
+  box-shadow: 0 5px 20px #183a3633;
+}

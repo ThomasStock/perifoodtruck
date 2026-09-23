@@ -10,6 +10,11 @@ import {
   exited,
   idleInput,
   interact,
+  toggleCab,
+  validPose,
+  walking,
+  attached,
+  interaction,
   KIOSK,
   newPlayer,
   OBSTACLES,
@@ -105,7 +110,9 @@ test("tractor starts unattached, original driving physics remain, gate is open a
 });
 test("parking, walking to kiosk, and own-trailer alignment govern interactions", () => {
   const p = newPlayer("a@example.com");
+  p.truck.speed = 1;
   assert.throws(() => interact(p));
+  p.truck.speed = 0;
   p.truck.z = 43;
   interact(p);
   assert.equal(p.phase, "walk-kiosk");
@@ -233,7 +240,8 @@ test("kiosk confirmation reserves only; collection and whole-trailer exit place 
   assert.equal(s.me.parking, null);
   await alice.mutation(fn("join"), { session: "again" });
   assert.equal((await alice.query(world, {})).me.phase, "complete");
-  await assert.rejects(alice.mutation(fn("interact"), { session: "again" }));
+  await alice.mutation(fn("cab"), { session: "again" });
+  assert.equal((await alice.query(world, {})).me.onFoot, true);
 });
 test("concurrent kiosk reservations fill three distinct slots, then overflow without blocking", async () => {
   const { t } = setup();
@@ -310,7 +318,6 @@ test("Frikandel and Kipkorn remain available at regular prices without free port
   );
   assert.equal(priced.subtotalCents, 1400);
   assert.equal(priced.totalCents, 1550);
-
 });
 
 test("backend places regular portions without promotional extras", async () => {
@@ -621,4 +628,59 @@ test("walking turbo moves three times faster and multiplayer accepts the boosted
     driver: { x: 9, z: 0 },
   });
   assert.equal((await alice.query(world, {})).me.driver.x, 9);
+});
+
+test("stopped players can leave anywhere and resume every driving stage", () => {
+  for (const phase of ["arrive", "pickup", "exit", "complete"] as const) {
+    const p = newPlayer("walker@example.com");
+    p.phase = phase;
+    p.truck = { ...spawn(), x: 15, z: 30, heading: 0, trailerHeading: 0 };
+    for (const speed of [-1, 0.02, 1]) {
+      p.truck.speed = speed;
+      assert.throws(() => toggleCab(p));
+    }
+    p.truck.speed = 0;
+    const truck = { ...p.truck };
+    toggleCab(p);
+    assert.ok(walking(p), phase);
+    assert.equal(attached(p), phase === "exit");
+    const input = idleInput();
+    input.walkX = 1;
+    input.throttle = 1;
+    drive(p, input, 0.1);
+    assert.deepEqual(p.truck, truck);
+    p.driver = { x: 30, z: 30 };
+    assert.equal(interaction(p), "");
+    assert.throws(() => toggleCab(p));
+    p.driver = { x: 18, z: 30 };
+    toggleCab(p);
+    assert.equal(p.phase, phase);
+    assert.equal(walking(p), false);
+  }
+});
+
+test("walking outside the exit remains valid and multiplayer persists cab transitions", async () => {
+  const { t, alice } = setup();
+  await alice.mutation(fn("join"), { session: "a" });
+  const truck = {
+    ...spawn(),
+    x: 68,
+    z: 34,
+    heading: Math.PI / 2,
+    trailerHeading: Math.PI / 2,
+  };
+  await put(t, "alice@example.com", { phase: "complete", truck });
+  await alice.mutation(fn("cab"), { session: "a" });
+  let p = (await alice.query(world, {})).me;
+  assert.equal(p.onFoot, true);
+  assert.ok(validPose(p.truck, p.driver));
+  await alice.mutation(fn("move"), {
+    session: "a",
+    truck: { ...truck, heading: 0, speed: 8 },
+    driver: p.driver,
+  });
+  p = (await alice.query(world, {})).me;
+  assert.deepEqual(p.truck, truck);
+  await alice.mutation(fn("cab"), { session: "a" });
+  assert.equal((await alice.query(world, {})).me.onFoot, false);
 });

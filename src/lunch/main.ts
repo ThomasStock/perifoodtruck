@@ -26,6 +26,7 @@ import {
   drive,
   idleInput,
   interaction,
+  cabAction,
   objective,
   walking,
   type Snapshot,
@@ -50,11 +51,11 @@ $("app").innerHTML = `<div id="world"></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
 <footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Drive & walk</span><span><kbd>SPACE</kbd> <span id="space-label">Turbo</span></span><span><kbd>SHIFT</kbd> Precision</span></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
 <div id="touch" hidden><div><button data-key="a" aria-label="Left">←</button><button data-key="d" aria-label="Right">→</button></div><div><button data-key="s" aria-label="Reverse">↓</button><button data-key="w" aria-label="Forward">↑</button><button id="brake-turbo" data-key=" " aria-label="Turbo" title="Hold for turbo"><svg class="turbo-icon" width="20" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 14h6l-1 8L20 9h-7l.5-7Z"/></svg></button></div></div>
-<div id="burger-controls" hidden><button id="clean-burger" hidden>Clean up <kbd>R</kbd></button><button data-key=" " aria-label="Walking turbo" title="Hold for turbo"><svg class="turbo-icon" width="20" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 14h6l-1 8L20 9h-7l.5-7Z"/></svg><span>Turbo</span></button><button id="throw-burger">Throw burger</button><small>Mouse to aim · Click to throw</small></div><div id="walk-joystick" class="walking-joystick" aria-label="Walk" hidden><span class="joystick-knob"></span></div>
+<button id="cab-action" hidden></button><div id="burger-controls" hidden><button id="clean-burger" hidden>Clean up <kbd>R</kbd></button><button data-key=" " aria-label="Walking turbo" title="Hold for turbo"><svg class="turbo-icon" width="20" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 14h6l-1 8L20 9h-7l.5-7Z"/></svg><span>Turbo</span></button><button id="throw-burger">Throw burger</button><small>Mouse to aim · Click to throw</small></div><div id="walk-joystick" class="walking-joystick" aria-label="Walk" hidden><span class="joystick-knob"></span></div>
 <dialog id="kiosk-dialog"><div class="kiosk-header"><div><div class="eyebrow">PERIPASS · LUNCH KIOSK</div><h2>What are you craving?</h2></div><button id="close-kiosk" aria-label="Close kiosk">×</button></div><div class="kiosk-layout"><section class="menu"><nav aria-label="Menu categories">${CATEGORIES.map((c) => `<button data-category="${c}" class="category">${c}</button>`).join("")}</nav><div id="products"></div></section><aside class="checkout"><div class="eyebrow">YOUR ORDER</div><h3>Good food ahead.</h3><div id="cart-lines"></div><div id="cart-totals"></div><p id="cart-error" role="alert"></p><button id="reserve" class="primary" disabled>Collect trailer to place order</button><small class="order-warning"><strong>Your order is not placed yet!</strong> Collect your trailer and drive it out of the yard to place your order.</small></aside></div></dialog>
 <dialog id="lunch-details"><div class="dialog-heading"><h2>Your lunch</h2><button data-close="lunch-details" aria-label="Close lunch details">×</button></div><div id="lunch-details-content"></div><button id="details-cancel" class="cancel-order">Cancel order</button><button id="details-reset" class="cancel-order">Start over</button></dialog><dialog id="reset-dialog"><div class="dialog-heading"><h2>Start over?</h2></div><p>This clears your basket and any placed order, releases your trailer, and returns you to the starting point. You stay signed in.</p><div class="cancel-actions"><button id="confirm-reset" class="primary">Yes, start over</button><button data-close="reset-dialog">Keep playing</button></div></dialog><dialog id="cancel-dialog"><div class="dialog-heading"><h2>Cancel your order?</h2></div><p>Your lunch will be removed from the order list and your trailer released. You will return to the starting point and can order again.</p><div class="cancel-actions"><button id="confirm-cancel" class="primary">Yes, cancel order</button><button data-close="cancel-dialog">Keep my order</button></div></dialog>
 <dialog id="orders-dialog"><div class="dialog-heading"><div><div class="eyebrow">LUNCH TOGETHER</div><h2>Placed orders</h2></div><button data-close="orders-dialog" aria-label="Close orders">×</button></div><p class="muted">Only trailers that have left the yard count as placed orders.</p><div id="orders-content"></div></dialog>
-<dialog id="help-dialog"><div class="dialog-heading"><h2>How your lunch run works</h2><button data-close="help-dialog" aria-label="Close help">×</button></div><ol><li><b>Park in P02.</b> You start without a trailer. Stop and press E to get out.</li><li><b>Walk to the kiosk.</b> Choose fries, burgers, snacks and sauces. Your total includes a ${euro(ORDER_FEE_CENTS)} order fee.</li><li><b>Collect your trailer.</b> Confirm at the kiosk, get back in and follow the marker to your name. The gate is open. Back gently towards your trailer and press E to attach. A slight angle is fine.</li><li><b>Drive through EXIT.</b> Use the opening in the right-hand fence. Your order is placed when your entire trailer is outside.</li></ol><p>Other players and their trailers are ghosts: visible, but they never block you. After placing your order, you can keep driving as a ghost. Hold Space or the mobile ⚡ button while driving for turbo.</p></dialog>`;
+<dialog id="help-dialog"><div class="dialog-heading"><h2>How your lunch run works</h2><button data-close="help-dialog" aria-label="Close help">×</button></div><ol><li><b>Stop anywhere.</b> Press G or tap Get out to leave your truck. Walk back and press G to get in. E also works when no other action is available.</li><li><b>Walk to the kiosk.</b> Choose fries, burgers, snacks and sauces. Your total includes a ${euro(ORDER_FEE_CENTS)} order fee.</li><li><b>Collect your trailer.</b> Confirm at the kiosk, get back in and follow the marker to your name. The gate is open. Back gently towards your trailer and press E to attach. A slight angle is fine.</li><li><b>Drive through EXIT.</b> Use the opening in the right-hand fence. Your order is placed when your entire trailer is outside.</li></ol><p>Other players and their trailers are ghosts: visible, but they never block you. After placing your order, you can keep driving as a ghost. Hold Space or the mobile ⚡ button while driving for turbo.</p></dialog>`;
 let scene: LunchScene,
   backend: Backend | null = null,
   state: Snapshot | null = null;
@@ -85,7 +86,12 @@ function message(e: unknown) {
 }
 function receive(next: Snapshot) {
   const old = state?.me.phase;
-  if (state && !restorePose && next.me.phase === old) {
+  if (
+    state &&
+    !restorePose &&
+    next.me.phase === old &&
+    next.me.onFoot === state.me.onFoot
+  ) {
     next.me.truck = { ...state.me.truck };
     next.me.driver = { ...state.me.driver };
   }
@@ -178,7 +184,8 @@ async function flush() {
   }
 }
 async function action(
-  name: "interact" | "reserve" | "leaveKiosk" | "recover" | "cancelOrder",
+  name:
+    "cab" | "interact" | "reserve" | "leaveKiosk" | "recover" | "cancelOrder",
 ) {
   if (!state || !backend || busy) return;
   busy = true;
@@ -231,6 +238,7 @@ function signout(explicit = true) {
     "controls",
     "touch",
     "burger-controls",
+    "cab-action",
     "walk-joystick",
     "action-wrap",
     "target-label",
@@ -328,6 +336,9 @@ function paint() {
   const p = state.me,
     obj = objective(p),
     prompt = interaction(p);
+  $("cab-action").hidden = !cabAction(p);
+  $("cab-action").textContent = `${cabAction(p)} · G`;
+  $<HTMLButtonElement>("cab-action").disabled = busy;
   $("cancel-order").hidden = !p.lines.length;
   $<HTMLButtonElement>("cancel-order").disabled = busy;
   $<HTMLButtonElement>("confirm-cancel").disabled = busy;
@@ -337,7 +348,7 @@ function paint() {
   $("objective").textContent = obj.title;
   $("hint").textContent = obj.detail;
   $("mission").dataset.brief = {
-    arrive: "Park in P02 · Press E to get out",
+    arrive: "Stop anywhere · E or G to get out",
     "walk-kiosk": "Follow the arrows to the kiosk",
     kiosk: "Choose your lunch",
     "walk-truck": "Return to your truck · Press E",
@@ -345,6 +356,8 @@ function paint() {
     exit: "Bring your trailer into the marked exit",
     complete: "Order saved · Free to explore",
   }[p.phase];
+  if (p.onFoot)
+    $("mission").dataset.brief = "Walk back to your truck · E or G to get in";
   $("lunch-summary-total").textContent = p.lines.length
     ? euro(p.totalCents)
     : "View";
@@ -462,6 +475,7 @@ $("signout").onclick = () => {
   $<HTMLDetailsElement>("player-menu").open = false;
   signout();
 };
+$("cab-action").onclick = () => void action("cab");
 $("action").onclick = () => void action("interact");
 $("lunch-summary").onclick = () => {
   keys.clear();
@@ -540,6 +554,7 @@ window.addEventListener("keydown", (e) => {
   if (["w", "a", "s", "d", " ", "shift", "e", "c", "r"].includes(k))
     e.preventDefault();
   keys.add(k);
+  if (!e.repeat && k === "g" && cabAction(state.me)) void action("cab");
   if (!e.repeat && k === "e" && interaction(state.me)) void action("interact");
   if (!e.repeat && k === "r") void burgerAction();
   if (!e.repeat && k === "c") $("camera").click();

@@ -25,6 +25,7 @@ export default defineSchema({
     thrownAt: v.number(),
   }).index("by_subject", ["subject", "thrownAt"]),
   lunchPlayers: defineTable({
+    onFoot: v.optional(v.boolean()),
     subject: v.string(),
     email: v.string(),
     session: v.string(),

@@ -15,6 +15,7 @@ import {
   recover as applyRecovery,
   validPose,
   walking,
+  toggleCab,
   type Player,
 } from "../src/lunch/model";
 import { priceCart } from "../src/lunch/menu";
@@ -57,6 +58,7 @@ const publicPlayer = (p: Player): Player => ({
   truck: p.truck,
   driver: p.driver,
   phase: p.phase,
+  onFoot: p.onFoot ?? false,
   parking: normalizeParking(p.parking),
   lines: p.lines,
   subtotalCents: p.subtotalCents,
@@ -132,7 +134,12 @@ export const move = mutation({
       throw new Error("Position out of sync. Please sign in again.");
     if (p.phase === "kiosk" && distance(driver, p.driver) > 0.01)
       throw new Error("Close the kiosk to continue walking.");
-    const next = { ...p, truck, driver, updatedAt: Date.now() };
+    const next = {
+      ...p,
+      truck: walking(p) ? p.truck : truck,
+      driver,
+      updatedAt: Date.now(),
+    };
     if (exited(next)) {
       // This is the only commit point. Kiosk confirmation merely reserves a trailer.
       const existing = await ctx.db
@@ -160,6 +167,14 @@ export const interact = mutation({
   handler: async (ctx, { session }) => {
     const p = await player(ctx, session);
     applyInteraction(p);
+    await ctx.db.patch(p._id, publicPlayer(p));
+  },
+});
+export const cab = mutation({
+  args: { session: v.string() },
+  handler: async (ctx, { session }) => {
+    const p = await player(ctx, session);
+    toggleCab(p);
     await ctx.db.patch(p._id, publicPlayer(p));
   },
 });

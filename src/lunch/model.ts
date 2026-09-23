@@ -41,6 +41,7 @@ export type Player = {
   truck: Truck;
   driver: Point;
   phase: Phase;
+  onFoot?: boolean;
   parking: number | null;
   lines: OrderLine[];
   subtotalCents: number;
@@ -83,7 +84,7 @@ export const newPlayer = (email: string): Player => ({
   updatedAt: Date.now(),
 });
 export const walking = (p: Player) =>
-  ["walk-kiosk", "kiosk", "walk-truck"].includes(p.phase);
+  !!p.onFoot || ["walk-kiosk", "kiosk", "walk-truck"].includes(p.phase);
 export const attached = (p: Player) => p.phase === "exit";
 export function parked(p: Player) {
   return (
@@ -104,6 +105,7 @@ export function pickupBody(p: Player): Rect | null {
 export function pickupReady(p: Player) {
   const bay = PARKINGS.find((b) => b.id === p.parking);
   return (
+    !walking(p) &&
     p.phase === "pickup" &&
     !!bay &&
     distance(p.truck, bay) < 6 &&
@@ -115,6 +117,7 @@ export function pickupReady(p: Player) {
 }
 export function exited(p: Player) {
   return (
+    !walking(p) &&
     p.phase === "exit" &&
     corners(rigRects(p.truck)[1]).every(
       (c) => c.x > EXIT.x && Math.abs(c.z - EXIT.z) < EXIT.halfWidth,
@@ -157,11 +160,9 @@ export function drive(p: Player, input: Input, dt: number) {
       z: p.driver.z + (input.walkZ / len) * speed * dt,
     };
     if (
-      Math.abs(next.x) < 51 &&
-      next.z > -43 &&
-      next.z < 78 &&
-      ![...OBSTACLES, rigRects(p.truck)[0]].some((o) =>
-        overlap(rect(next.x, next.z, 0.55, 0.55), o),
+      walkable(next) &&
+      ![...OBSTACLES, ...rigRects(p.truck).slice(0, attached(p) ? 2 : 1)].some(
+        (o) => overlap(rect(next.x, next.z, 0.55, 0.55), o),
       )
     )
       p.driver = next;
@@ -204,13 +205,51 @@ export function validPose(t: Truck, p: Point) {
     Math.abs(t.trailerHeading) <= Math.PI + 0.001 &&
     Math.abs(t.speed) <= 16.6 &&
     Math.abs(t.steer) <= 0.58 &&
-    Math.abs(p.x) <= 51 &&
-    p.z >= -43 &&
-    p.z <= 78
+    walkable(p)
   );
 }
+const walkable = (p: Point) =>
+  p.x >= -51 &&
+  p.x <= 86 &&
+  p.z >= -43 &&
+  p.z <= 78 &&
+  (p.x <= 51 || Math.abs(p.z - EXIT.z) < EXIT.halfWidth - 0.3);
+export function cabAction(p: Player): string {
+  if (p.phase === "kiosk") return "";
+  if (walking(p))
+    return distance(p.driver, p.truck) < 5.3 ? "Get back in your truck" : "";
+  return Math.abs(p.truck.speed) < 0.01 ? "Get out of your truck" : "";
+}
+export function toggleCab(p: Player) {
+  if (!cabAction(p))
+    throw new Error("Stop your truck or walk back to it first.");
+  if (walking(p)) {
+    p.onFoot = false;
+    if (p.phase === "walk-kiosk") p.phase = "arrive";
+    if (p.phase === "walk-truck") p.phase = "pickup";
+    return;
+  }
+  const obstacles = [
+    ...OBSTACLES,
+    ...rigRects(p.truck).slice(0, attached(p) ? 2 : 1),
+  ];
+  const candidates = [Math.PI / 2, -Math.PI / 2, 0, Math.PI].flatMap((a) =>
+    [3, 4, 5].map((d) => offset(p.truck, p.truck.heading + a, d)),
+  );
+  const spot = candidates.find(
+    (p) =>
+      walkable(p) &&
+      !obstacles.some((o) => overlap(rect(p.x, p.z, 0.55, 0.55), o)),
+  );
+  if (!spot)
+    throw new Error("No room to step out. Move away from the obstacle.");
+  p.truck.speed = 0;
+  p.driver = spot;
+  if (p.phase === "arrive") p.phase = "walk-kiosk";
+  else p.onFoot = true;
+}
 export function interaction(p: Player): string {
-  if (p.phase === "arrive" && parked(p)) return "Get out · go to the kiosk";
+  if (p.onFoot) return cabAction(p);
   if (p.phase === "walk-kiosk" && distance(p.driver, KIOSK) < 2.4)
     return "Open lunch menu";
   if (p.phase === "walk-kiosk" && distance(p.driver, p.truck) < 5.3)
@@ -218,23 +257,21 @@ export function interaction(p: Player): string {
   if (p.phase === "walk-truck" && distance(p.driver, p.truck) < 5.3)
     return "Get in · collect your trailer";
   if (pickupReady(p)) return "Attach your lunch trailer";
-  return "";
+  return cabAction(p);
 }
 export function interact(p: Player) {
   if (!interaction(p)) throw new Error("Go to the marker and stop.");
-  p.truck.speed = 0;
-  if (p.phase === "arrive") {
-    p.phase = "walk-kiosk";
-    p.driver = offset(p.truck, p.truck.heading + Math.PI / 2, 3);
-  } else if (p.phase === "walk-kiosk")
-    p.phase = distance(p.driver, KIOSK) < 2.4 ? "kiosk" : "arrive";
-  else if (p.phase === "walk-truck") p.phase = "pickup";
-  else if (p.phase === "pickup") {
+  if (p.phase === "walk-kiosk" && distance(p.driver, KIOSK) < 2.4) {
+    p.phase = "kiosk";
+  } else if (pickupReady(p)) {
+    p.truck.speed = 0;
     p.phase = "exit";
     p.truck.trailerHeading = 0;
-  }
+  } else toggleCab(p);
 }
+
 export function recover(p: Player) {
+  p.onFoot = false;
   p.truck = spawn();
   p.driver = { x: -27, z: 43 };
   if (p.phase !== "complete") p.phase = p.lines.length ? "pickup" : "arrive";
@@ -245,11 +282,19 @@ export function objective(p: Player): {
   target: Point;
   step: number;
 } {
+  if (p.onFoot)
+    return {
+      title: "Explore on foot",
+      detail: "Walk back to your truck and press E or G to get in.",
+      target: p.truck,
+      step: p.phase === "pickup" ? 3 : 4,
+    };
   switch (p.phase) {
     case "arrive":
       return {
         title: "Park beside the kiosk",
-        detail: "Drive your truck to P02. Stop between the lines and get out.",
+        detail:
+          "Stop anywhere and press E or G to get out. P02 is close to the kiosk.",
         target: PARK,
         step: 1,
       };
@@ -257,8 +302,7 @@ export function objective(p: Player): {
     case "kiosk":
       return {
         title: "What's for lunch?",
-        detail:
-          `Walk to the kiosk and choose your lunch. A ${euro(ORDER_FEE_CENTS)} fee applies per order.`,
+        detail: `Walk to the kiosk and choose your lunch. A ${euro(ORDER_FEE_CENTS)} fee applies per order.`,
         target: KIOSK,
         step: 2,
       };

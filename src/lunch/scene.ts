@@ -5,7 +5,6 @@ import * as THREE from "three";
 import { createBurgerSign } from "./burger-sign";
 import { YardScene } from "../scene";
 import { DriverRig } from "../rig";
-import { DriverBreak } from "../driver-break";
 import { RigWheels } from "../wheels";
 import { idleInput, createState, type State } from "../game/simulation";
 import {
@@ -120,7 +119,6 @@ type Remote = {
   wheels: RigWheels;
   pose: Player["truck"];
   motion: RemoteMotion;
-  break: DriverBreak;
 };
 export class LunchScene {
   base: YardScene;
@@ -271,10 +269,11 @@ export class LunchScene {
       dispatched: false,
       elapsed: this.elapsed,
     };
-    s.phase =
-      p.phase === "walk-kiosk" ||
-      p.phase === "kiosk" ||
-      p.phase === "walk-truck"
+    s.phase = p.onFoot
+      ? "walk-truck"
+      : p.phase === "walk-kiosk" ||
+          p.phase === "kiosk" ||
+          p.phase === "walk-truck"
         ? p.phase
         : p.phase === "arrive"
           ? "arrive"
@@ -324,7 +323,6 @@ export class LunchScene {
           wheels,
           pose: { ...p.truck },
           motion: new RemoteMotion(),
-          break: new DriverBreak(driver),
         };
         this.remotes.set(p.email, v);
       }
@@ -337,17 +335,12 @@ export class LunchScene {
         const wheel = v.cab.getObjectByName(name);
         if (wheel) wheel.rotation.y = v.pose.steer;
       }
-      if (!walking(p))
-        v.break.update(v.pose, true, dt, this.base.reducedMotion);
-      else {
-        v.break.update(v.pose, false, dt);
-        v.rig.update(
-          this.sceneState({ ...p, ...smoothed }),
-          idleInput(),
-          dt,
-          false,
-        );
-      }
+      v.rig.update(
+        this.sceneState({ ...p, ...smoothed }),
+        idleInput(),
+        dt,
+        false,
+      );
       const actor = walking(p) ? smoothed.driver : v.pose;
       v.name.position.set(actor.x, walking(p) ? 2.8 : 4.8, actor.z);
       v.name.material.opacity = 0.85;

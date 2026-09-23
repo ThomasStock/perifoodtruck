@@ -296,3 +296,20 @@ test("kiosk action takes priority over burger controls", async () => {
   assert.equal(doc.getElementById("burger-controls")!.hidden, false);
   dom.window.close();
 });
+
+test("cab control exits away from P02, returns to the truck, and hides while moving", async () => {
+  const { dom, run, doc } = await game();
+  await run("action('cancelOrder')");
+  assert.equal(run("state.me.truck.z"), 62);
+  assert.equal(doc.getElementById("cab-action")!.hidden, false);
+  await run("action('cab')");
+  assert.equal(run("state.me.phase"), "walk-kiosk");
+  assert.equal(doc.getElementById("touch")!.hidden, true);
+  await run("action('cab')");
+  assert.equal(run("state.me.phase"), "arrive");
+  await run("state.me.truck.speed = 1; paint()");
+  assert.equal(doc.getElementById("cab-action")!.hidden, true);
+  await run("signout()");
+  assert.equal(doc.getElementById("cab-action")!.hidden, true);
+  dom.window.close();
+});
