@@ -308,7 +308,7 @@ function paint() {
       ? `Your trailer · L0${p.parking + 1}`
       : p.phase === "complete"
         ? "✓ Order placed"
-        : "All docks are closed for lunch.";
+        : "Follow the ground arrows to your next stop.";
   $("action-wrap").hidden = !prompt;
   $("action-text").textContent = prompt;
   $<HTMLButtonElement>("action").disabled = busy;
@@ -362,21 +362,7 @@ function paint() {
       ? `<section class="order-totals"><h3>Items to order</h3>${[...counts.values()].map((l) => `<div><span>${esc(l.name)}</span><b>× ${l.quantity + l.free}${l.free ? ` <small>(${l.quantity} paid + ${l.free} free)</small>` : ""}</b></div>`).join("")}<div><span>Order fee · ${state.orders.length} orders</span><b>${euro(state.orders.reduce((sum, o) => sum + o.feeCents, 0))}</b></div><div class="grand-total"><span>Total</span><b>${euro(state.orders.reduce((sum, o) => sum + o.totalCents, 0))}</b></div></section>${state.orders.map((o) => `<section class="person-order ${o.email === p.email ? "you" : ""}"><h3>${esc(o.email)} ${o.email === p.email ? "<small>YOU</small>" : ""}</h3>${lineHtml(o.lines)}${totalsHtml(o.subtotalCents, o.feeCents, o.totalCents)}</section>`).join("")}`
       : '<div class="empty">No orders placed yet.<br>Drive your trailer through the exit to add your lunch.</div>';
   }
-  const pos = scene.project(obj.target);
-  $("target-label").hidden =
-    !pos.visible || p.phase === "kiosk" || p.phase === "complete";
-  $("target-label").style.left = `${pos.x}px`;
-  $("target-label").style.top = `${pos.y}px`;
-  $("target-label").textContent =
-    p.phase === "pickup"
-      ? `YOUR TRAILER · L0${p.parking! + 1}`
-      : p.phase === "exit"
-        ? "EXIT →"
-        : p.phase === "arrive"
-          ? "P02 · PARKING"
-          : p.phase === "walk-truck"
-            ? "YOUR TRUCK"
-            : "LUNCH KIOSK";
+  $("target-label").hidden = true;
   drawMap();
 }
 function drawMap() {

@@ -14,7 +14,7 @@ import {
   type Input,
   type Point,
 } from "./model";
-function label(text: string, width = 16) {
+function label(text: string, width = 7) {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 128;
@@ -94,24 +94,37 @@ export class LunchScene {
   private ownName = label("");
   private name = "";
   private ghost = false;
-  private trail: THREE.Line;
   private elapsed = 0;
+  private arrows: THREE.InstancedMesh;
   private burgerSign = createBurgerSign();
   constructor(container: HTMLElement) {
     this.base = new YardScene(container, true);
     this.base.mode = "yard";
     this.base.scene.add(this.burgerSign.root);
-    this.trail = new THREE.Line(
-      new THREE.BufferGeometry(),
-      new THREE.LineDashedMaterial({
-        color: "#b7ffe7",
-        dashSize: 1,
-        gapSize: 1,
+    const arrow = new THREE.Shape();
+    arrow.moveTo(-0.8, -0.18);
+    arrow.lineTo(0.2, -0.18);
+    arrow.lineTo(0.2, -0.55);
+    arrow.lineTo(0.9, 0);
+    arrow.lineTo(0.2, 0.55);
+    arrow.lineTo(0.2, 0.18);
+    arrow.lineTo(-0.8, 0.18);
+    arrow.closePath();
+    const arrowGeometry = new THREE.ShapeGeometry(arrow);
+    arrowGeometry.rotateX(-Math.PI / 2);
+    this.arrows = new THREE.InstancedMesh(
+      arrowGeometry,
+      new THREE.MeshBasicMaterial({
+        color: "#a6efcd",
+        side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.85,
       }),
+      100,
     );
-    this.base.scene.add(this.trail, this.ownName);
+    this.arrows.count = 0;
+    this.arrows.frustumCulled = false;
+    this.base.scene.add(this.ownName);
     this.base.gate.rotation.z = Math.PI * 0.48;
     for (const bay of PARKINGS) {
       const material = new THREE.MeshBasicMaterial({ color: "#e5e7ca" });
@@ -123,22 +136,7 @@ export class LunchScene {
         line.position.set(bay.x + side * 3, 0.08, bay.z - 5);
         this.base.scene.add(line);
       }
-      const name = label(`L0${bay.id + 1}`, 5);
-      name.position.set(bay.x, 1, bay.z - 14.5);
-      this.base.scene.add(name);
     }
-    for (const x of [-36, -18, 0, 18, 36]) {
-      const sign = label("CLOSED FOR LUNCH", 13);
-      sign.position.set(x, 4.5, -43);
-      this.base.scene.add(sign);
-    }
-    const sign = label("EXIT  →  PLACE ORDER", 23);
-    sign.position.set(52, 7, 34);
-    this.base.scene.add(sign);
-    const kiosk = label("ORDER LUNCH HERE", 11);
-    kiosk.position.set(-39, 4.3, 30);
-    kiosk.scale.set(12, 1.5, 1);
-    this.base.scene.add(kiosk);
     for (const z of [22, 46]) {
       const post = new THREE.Mesh(
         new THREE.BoxGeometry(0.4, 5, 0.4),
@@ -177,6 +175,7 @@ export class LunchScene {
   }
   async load() {
     await this.base.load();
+    this.base.scene.add(this.arrows);
   }
   project(p: Point) {
     return this.base.project(p, 4);
@@ -287,7 +286,7 @@ export class LunchScene {
         );
         trailer.position.set(0, 0, 0);
         trailer.rotation.set(0, 0, 0);
-        group.add(trailer, label(p.email, 18));
+        group.add(trailer, label(p.email, 8));
         this.base.scene.add(group);
         this.parked.set(p.email, group);
       }
@@ -317,7 +316,7 @@ export class LunchScene {
     }
     const actor = walking(local) ? local.driver : local.truck;
     this.ownName.position.set(actor.x, walking(local) ? 3.3 : 6.5, actor.z);
-    this.ownName.visible = !!me;
+    this.ownName.visible = false;
     const obj = objective(local);
     const points = [actor];
     if (local.phase === "pickup" && local.truck.z > 12)
@@ -327,17 +326,35 @@ export class LunchScene {
     if (local.phase === "walk-kiosk" && local.driver.z > 31)
       points.push({ x: -28, z: 29.5 });
     points.push(obj.target);
-    const geometry = new THREE.BufferGeometry().setFromPoints(
-      points.map((p) => new THREE.Vector3(p.x, 0.19, p.z)),
-    );
-    this.trail.geometry.dispose();
-    this.trail.geometry = geometry;
-    this.trail.computeLineDistances();
-    this.trail.visible =
-      !!me && me.phase !== "complete" && me.phase !== "kiosk";
+    const guiding = !!me && me.phase !== "complete" && me.phase !== "kiosk";
+    this.arrows.visible = guiding;
+    const marker = new THREE.Object3D();
+    let count = 0;
+    const spacing = walking(local) ? 2 : 5;
+    for (let i = 1; i < points.length && count < 100; i++) {
+      const from = points[i - 1],
+        to = points[i];
+      const dx = to.x - from.x,
+        dz = to.z - from.z,
+        length = Math.hypot(dx, dz);
+      for (let d = spacing; d < length && count < 100; d += spacing) {
+        marker.position.set(
+          from.x + (dx * d) / length,
+          0.12,
+          from.z + (dz * d) / length,
+        );
+        marker.rotation.y = -Math.atan2(dz, dx);
+        marker.scale.setScalar(walking(local) ? 0.65 : 1);
+        marker.updateMatrix();
+        this.arrows.setMatrixAt(count++, marker.matrix);
+      }
+    }
+    this.arrows.count = count;
+    this.arrows.instanceMatrix.needsUpdate = true;
     this.base.render(this.sceneState(local), input, dt, !!me, {
       target: obj.target,
       attached: attached(local),
     });
+    this.base.target.visible = guiding;
   }
 }
