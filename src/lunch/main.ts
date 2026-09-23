@@ -230,17 +230,21 @@ function renderMenu() {
   $("products").innerHTML = products.length
     ? products
         .map((p) => {
-          const {
-            size: [sw, sh],
-            crop: [x, y, w, h],
-            source,
-          } = p.photo;
+          let image = "";
+          if (p.photo) {
+            const {
+              size: [sw, sh],
+              crop: [x, y, w, h],
+              source,
+            } = p.photo;
+            image = `<div class="menu-photo" role="img" aria-label="${esc(p.name)}" style="background-image:url('${source}');background-size:${(sw / w) * 100}% ${(sh / h) * 100}%;background-position:${(x / (sw - w)) * 100}% ${(y / (sh - h)) * 100}%"></div>`;
+          }
           const quantity =
             cart.find((l) => l.productId === p.id)?.quantity ?? 0;
-          return `<article class="product"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${quantity ? `<span class="in-cart">${quantity} in je mandje</span>` : ""}</div><div class="menu-photo" role="img" aria-label="${esc(p.name)}" style="background-image:url('${source}');background-size:${(sw / w) * 100}% ${(sh / h) * 100}%;background-position:${(x / (sw - w)) * 100}% ${(y / (sh - h)) * 100}%"></div><button class="add-product" data-plus="${p.id}" aria-label="Voeg ${esc(p.name)} toe">+</button></article>`;
+          return `<article class="product"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${p.description ? `<p class="product-description">${esc(p.description)}</p>` : ""}${quantity ? `<span class="in-cart">${quantity} in je mandje</span>` : ""}</div>${image}<button class="add-product" data-plus="${p.id}" aria-label="Voeg ${esc(p.name)} toe">+</button></article>`;
         })
         .join("")
-    : '<div class="menu-empty"><h3>Sauzen volgen binnenkort</h3><p>Het sauzenmenu wordt nog aangevuld.</p></div>';
+    : '<div class="menu-empty"><h3>Geen producten</h3><p>Kies een andere categorie.</p></div>';
   renderCart();
 }
 function renderCart() {

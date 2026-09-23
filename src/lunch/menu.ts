@@ -1,6 +1,6 @@
 /** Prices and original photographs transcribed from the supplied menu screenshots.
  * Screenshots stay intact; the UI crops them with CSS, preserving the actual photos.
- * No promotions or sauces are assumed while their details are pending.
+ * Promotional pricing awaits confirmation.
  */
 export const CATEGORIES = ["Frieten", "Burgers", "Snacks", "Sauzen"] as const;
 export type Category = (typeof CATEGORIES)[number];
@@ -14,7 +14,8 @@ export type Product = {
   name: string;
   category: Category;
   cents: number;
-  photo: Photo;
+  photo: Photo | null;
+  description?: string;
 };
 const photo = (
   source: string,
@@ -33,14 +34,15 @@ const snack3 = (x: number, y: number, w = 195, h = 195) =>
   photo("snacks-3", [1365, 1823], [x, y, w, h]);
 function products(
   category: Category,
-  rows: [string, string, number, Photo][],
+  rows: [string, string, number, Photo | null, string?][],
 ): Product[] {
-  return rows.map(([id, name, cents, photo]) => ({
+  return rows.map(([id, name, cents, photo, description]) => ({
     id,
     name,
     cents,
     photo,
     category,
+    ...(description ? { description } : {}),
   }));
 }
 export const MENU: Product[] = [
@@ -138,6 +140,137 @@ export const MENU: Product[] = [
       snack3(423, 1602),
     ],
     ["kip-kaaspunt", "Kip Kaaspunt", 440, snack3(1107, 1602)],
+  ]),
+  ...products("Sauzen", [
+    [
+      "mayonaise",
+      "Mayonaise",
+      120,
+      photo("sauzen-1", [1432, 1760], [440, 85, 190, 180]),
+      "Potje",
+    ],
+    [
+      "ketchup",
+      "Ketchup",
+      120,
+      photo("sauzen-1", [1432, 1760], [1100, 85, 190, 180]),
+      "Potje",
+    ],
+    [
+      "curry-ketchup",
+      "Curry ketchup",
+      120,
+      photo("sauzen-1", [1432, 1760], [440, 383, 190, 180]),
+      "Potje",
+    ],
+    [
+      "americain",
+      "Americain",
+      120,
+      photo("sauzen-1", [1432, 1760], [1100, 383, 190, 180]),
+      "Potje",
+    ],
+    [
+      "bearnaise",
+      "Bearnaise",
+      120,
+      photo("sauzen-1", [1432, 1760], [440, 681, 190, 180]),
+      "Potje",
+    ],
+    [
+      "frietsaus",
+      "Frietsaus",
+      120,
+      photo("sauzen-1", [1432, 1760], [1100, 681, 190, 180]),
+      "Potje",
+    ],
+    [
+      "tartaar",
+      "Tartaar",
+      120,
+      photo("sauzen-1", [1432, 1760], [440, 979, 190, 180]),
+      "Potje",
+    ],
+    [
+      "andalouse",
+      "Andalouse",
+      120,
+      photo("sauzen-1", [1432, 1760], [1100, 979, 190, 180]),
+      "Potje",
+    ],
+    [
+      "cocktail",
+      "Cocktail",
+      120,
+      photo("sauzen-1", [1432, 1760], [440, 1277, 190, 180]),
+      "Potje",
+    ],
+    [
+      "samurai",
+      "Samurai",
+      120,
+      photo("sauzen-1", [1432, 1760], [1100, 1277, 190, 180]),
+      "Potje",
+    ],
+    [
+      "look",
+      "Look",
+      120,
+      photo("sauzen-1", [1432, 1760], [440, 1575, 190, 180]),
+      "Potje",
+    ],
+    [
+      "joppie",
+      "Joppie",
+      120,
+      photo("sauzen-1", [1432, 1760], [1100, 1575, 190, 180]),
+      "Potje",
+    ],
+    [
+      "peper",
+      "Peper",
+      120,
+      photo("sauzen-2", [1526, 1472], [467, 100, 210, 190]),
+      "Potje",
+    ],
+    [
+      "pili-pili",
+      "Pili-pili",
+      120,
+      photo("sauzen-2", [1526, 1472], [1210, 100, 210, 190]),
+      "Potje",
+    ],
+    [
+      "brasil",
+      "Brasil",
+      120,
+      photo("sauzen-2", [1526, 1472], [467, 436, 210, 190]),
+      "Potje",
+    ],
+    [
+      "mosterd",
+      "Mosterd",
+      120,
+      photo("sauzen-2", [1526, 1472], [1210, 436, 210, 190]),
+      "Potje",
+    ],
+    ["bicky-ui", "Bicky ui", 120, null, "Potje"],
+    ["verse-ui", "verse ui", 120, null, "Potje"],
+    ["gele-bicky-saus", "Gele Bicky saus", 120, null, "Potje"],
+    [
+      "speciaal-curryketchup",
+      "Speciaal Curryketchup",
+      220,
+      null,
+      "Mayonaise en curryketchup en verse ui",
+    ],
+    [
+      "speciaal-tomatenketchup",
+      "Speciaal Tomatenketchup",
+      220,
+      null,
+      "Mayonaise en tomatenketchup en verse ui",
+    ],
   ]),
 ];
 export type CartItem = { productId: string; quantity: number };

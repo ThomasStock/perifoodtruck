@@ -1043,3 +1043,10 @@ dialog ol {
     transition: none !important;
   }
 }
+
+.product-description {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #658079;
+  margin: 8px 0 0;
+}
