@@ -127,7 +127,7 @@ export const move = mutation({
     );
     if (
       distance(truck, p.truck) > (walking(p) ? 0.01 : 17 * elapsed + 2) ||
-      distance(driver, p.driver) > (walking(p) ? 4 * elapsed + 1 : 0.01)
+      distance(driver, p.driver) > (walking(p) ? 10 * elapsed + 1 : 0.01)
     )
       throw new Error("Position out of sync. Please sign in again.");
     if (p.phase === "kiosk" && distance(driver, p.driver) > 0.01)

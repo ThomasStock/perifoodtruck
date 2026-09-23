@@ -596,3 +596,29 @@ test("start over resets an empty run without signing out or affecting another pl
   assert.equal(me.lines.length, 0);
   await alice.mutation(fn("recover"), { session: "reset" });
 });
+
+test("walking turbo moves three times faster and multiplayer accepts the boosted pace", async () => {
+  const p = newPlayer("walker@example.com");
+  p.phase = "walk-kiosk";
+  p.driver = { x: 0, z: 0 };
+  const boosted = structuredClone(p);
+  for (let i = 0; i < 60; i++) {
+    drive(p, { ...idleInput(), walkX: 1 }, 1 / 60);
+    drive(boosted, { ...idleInput(), walkX: 1, turbo: true }, 1 / 60);
+  }
+  assert.ok(Math.abs(boosted.driver.x - p.driver.x * 3) < 0.001);
+  const { t, alice } = setup();
+  await alice.mutation(fn("join"), { session: "walk" });
+  await put(t, "alice@example.com", {
+    phase: "walk-kiosk",
+    driver: { x: 0, z: 0 },
+    updatedAt: Date.now() - 1000,
+  });
+  const me = (await alice.query(world, {})).me;
+  await alice.mutation(fn("move"), {
+    session: "walk",
+    truck: me.truck,
+    driver: { x: 9, z: 0 },
+  });
+  assert.equal((await alice.query(world, {})).me.driver.x, 9);
+});

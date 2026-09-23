@@ -151,9 +151,10 @@ export function drive(p: Player, input: Input, dt: number) {
   if (p.phase === "kiosk") return;
   if (walking(p)) {
     const len = Math.max(1, Math.hypot(input.walkX, input.walkZ));
+    const speed = input.turbo ? 9 : 3;
     const next = {
-      x: p.driver.x + (input.walkX / len) * 3 * dt,
-      z: p.driver.z + (input.walkZ / len) * 3 * dt,
+      x: p.driver.x + (input.walkX / len) * speed * dt,
+      z: p.driver.z + (input.walkZ / len) * speed * dt,
     };
     if (
       Math.abs(next.x) < 51 &&
