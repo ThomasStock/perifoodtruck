@@ -1279,3 +1279,25 @@ dialog ol {
   justify-content: center;
   gap: 6px;
 }
+
+.checkout > .order-warning {
+  padding: 12px 14px;
+  border: 1px solid #edcb87;
+  border-left: 4px solid #d99a24;
+  border-radius: 8px;
+  background: #fff6e3;
+  color: #79500f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.order-warning strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #69410b;
+}
+@media (max-width: 760px), (pointer: coarse) {
+  .checkout > .order-warning {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
