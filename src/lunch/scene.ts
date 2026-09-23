@@ -1,3 +1,4 @@
+import { guideRoute } from "./route";
 import { nameTag } from "./name-tag";
 import { RemoteMotion, applyRemoteTruckPose } from "./remote-motion";
 import { Barbecue } from "./barbecue";
@@ -380,15 +381,9 @@ export class LunchScene {
     this.ownName.position.set(actor.x, walking(local) ? 3.3 : 6.5, actor.z);
     this.ownName.visible = false;
     const obj = objective(local);
-    const points = [actor];
-    if (local.phase === "pickup" && local.truck.z > 12)
-      points.push({ x: 18, z: 25 }, { x: 18, z: 0 });
-    if (local.phase === "exit" && local.truck.z < 16)
-      points.push({ x: 18, z: 0 }, { x: 18, z: 28 });
-    if (local.phase === "walk-kiosk" && local.driver.z > 31)
-      points.push({ x: -28, z: 29.5 });
-    points.push(obj.target);
-    const guiding = !!me && me.phase !== "complete" && me.phase !== "kiosk";
+    const points = guideRoute(local);
+    const guiding =
+      !!me && (me.phase !== "complete" || !!me.onFoot) && me.phase !== "kiosk";
     this.arrows.visible = guiding;
     const marker = new THREE.Object3D();
     let count = 0;
@@ -417,6 +412,7 @@ export class LunchScene {
       target: obj.target,
       attached: attached(local),
     });
-    this.base.target.visible = guiding && local.phase !== "exit";
+    this.base.target.visible =
+      guiding && (local.phase !== "exit" || walking(local));
   }
 }
