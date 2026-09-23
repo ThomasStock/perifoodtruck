@@ -1192,6 +1192,12 @@ dialog ol {
   padding: 8px 12px;
   border-radius: 16px;
 }
+#clean-burger {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+}
 #throw-burger {
   color: #008e78;
   font-weight: 700;
