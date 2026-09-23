@@ -229,11 +229,17 @@ for i,x in enumerate([-36,-18,0,18,36]):
     for dx in [-2,2]:
         box('Dock bumper',(x+dx,.65,-44.12),(.34,1.3,.45),'rubber',.06)
         cyl('Bollard',(x+dx*1.45,.7,-43),.13,1.4,'yellow')
-    box('Dock number panel',(x,6.22,-44.73),(2.55,1.38,.15),'teal' if i==2 else 'dark',.05)
-    text('0'+str(i+1),(x,5.85,-44.62),.93,'white')
-    for dx in [-2.6,2.6]:box('Dock line',(x+dx,.052,-35),(.13,.018,17),'paint')
+    if not LUNCH:
+        box('Dock number panel',(x,6.22,-44.73),(2.55,1.38,.15),'teal' if i==2 else 'dark',.05)
+        text('0'+str(i+1),(x,5.85,-44.62),.93,'white')
+    if not LUNCH:
+        for dx in [-2.6,2.6]:box('Dock line',(x+dx,.052,-35),(.13,.018,17),'paint')
     box('Traffic lamp',(x+3.18,3.8,-44.29),(.3,.75,.2),'dark',.025)
     cyl('Lamp red',(x+3.18,4,-44.15),.08,.035,'red','z')
+if LUNCH:
+    for i,x in enumerate([-27,-9,9]):
+        box('Pickup bay sign',(x,4.8,-44.73),(3,1.5,.15),'teal',.05)
+        text('P0'+str(i+1),(x,4.4,-44.62),.85,'white')
 text('peripass',(37,7.1,-44.76),1.35,'teal')
 text('DISTRIBUTION  /  01',(-27,7.4,-44.76),.68,'dark')
 # parking bays

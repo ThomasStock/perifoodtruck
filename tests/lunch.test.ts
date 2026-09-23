@@ -121,8 +121,8 @@ test("parking, walking to kiosk, and own-trailer alignment govern interactions",
   assert.equal(pickupReady(p), false);
 });
 test("random allocation fills free parkings before allowing overlapping ghosts", () => {
-  assert.equal(chooseParking([0, 1, 2, 3, 4], 0.99), 5);
-  assert.equal(chooseParking([0, 1, 2, 3, 4, 5], 0.5), 3);
+  assert.equal(chooseParking([0, 1], 0.99), 2);
+  assert.equal(chooseParking([0, 1, 2], 0.5), 1);
   for (const bay of PARKINGS)
     assert.equal(
       OBSTACLES.some((o) =>
@@ -232,7 +232,7 @@ test("kiosk confirmation reserves only; collection and whole-trailer exit place 
   assert.equal((await alice.query(world, {})).me.phase, "complete");
   await assert.rejects(alice.mutation(fn("interact"), { session: "again" }));
 });
-test("concurrent kiosk reservations fill six distinct slots, then overflow without blocking", async () => {
+test("concurrent kiosk reservations fill three distinct slots, then overflow without blocking", async () => {
   const { t } = setup();
   const people = [];
   for (let i = 0; i < 8; i++) {
@@ -247,19 +247,19 @@ test("concurrent kiosk reservations fill six distinct slots, then overflow witho
   }
   await Promise.all(
     people
-      .slice(0, 6)
+      .slice(0, 3)
       .map((p, i) => p.mutation(fn("reserve"), { session: String(i), cart })),
   );
   let rows = await t.run((ctx) => ctx.db.query("lunchPlayers").collect());
   assert.equal(
     new Set(rows.filter((p) => p.parking !== null).map((p) => p.parking)).size,
-    6,
+    3,
   );
   await Promise.all(
     people
-      .slice(6)
+      .slice(3)
       .map((p, i) =>
-        p.mutation(fn("reserve"), { session: String(i + 6), cart }),
+        p.mutation(fn("reserve"), { session: String(i + 3), cart }),
       ),
   );
   rows = await t.run((ctx) => ctx.db.query("lunchPlayers").collect());
@@ -407,4 +407,29 @@ test("cancellation removes only the caller's placed order, resets the run and is
   await put(t, "alice@example.com", { phase: "kiosk", driver: KIOSK });
   await alice.mutation(fn("reserve"), { session: "a", cart });
   assert.equal((await alice.query(world, {})).me.phase, "walk-truck");
+});
+
+test("existing reservations in retired bays are mapped to a usable new parking", async () => {
+  const { t, alice } = setup();
+  await alice.mutation(fn("join"), { session: "a" });
+  await put(t, "alice@example.com", {
+    phase: "pickup",
+    parking: 5,
+    ...priceCart(cart),
+  });
+  const state = await alice.query(world, {});
+  assert.equal(state.me.parking, 2);
+  const bay = PARKINGS[2];
+  await put(t, "alice@example.com", {
+    truck: {
+      ...spawn(),
+      x: bay.x,
+      z: bay.z,
+      heading: 0,
+      trailerHeading: 0,
+      speed: -0.3,
+    },
+  });
+  await alice.mutation(fn("interact"), { session: "a" });
+  assert.equal((await alice.query(world, {})).me.phase, "exit");
 });

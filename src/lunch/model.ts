@@ -17,12 +17,16 @@ export type { Truck, Point, Input } from "../game/simulation";
 export const KIOSK = { x: -33.7, z: 28.2 };
 export const PARK = { x: -24, z: 43.5, w: 6, d: 23 };
 export const EXIT = { x: 54, z: 34, halfWidth: 12 };
-export const PARKINGS = [-40, -24, -8, 8, 24, 40].map((x, index) => ({
+export const PARKINGS = [-27, -9, 9].map((x, index) => ({
   id: index,
   x,
-  z: -15,
+  z: -27,
   heading: 0,
 }));
+export const normalizeParking = (id: number | null) =>
+  id === null
+    ? null
+    : ((id % PARKINGS.length) + PARKINGS.length) % PARKINGS.length;
 export type Phase =
   | "arrive"
   | "walk-kiosk"
@@ -251,13 +255,13 @@ export function objective(p: Player): {
     case "walk-truck":
       return {
         title: "Your lunch trailer is ready",
-        detail: `Walk back to your truck, then collect your trailer at L0${(p.parking ?? 0) + 1}. Your order has not been placed yet.`,
+        detail: `Walk back to your truck, then collect your trailer at P0${(p.parking ?? 0) + 1}. Your order has not been placed yet.`,
         target: p.truck,
         step: 3,
       };
     case "pickup":
       return {
-        title: `Collect your trailer · L0${(p.parking ?? 0) + 1}`,
+        title: `Collect your trailer · P0${(p.parking ?? 0) + 1}`,
         detail:
           "Find your trailer and back gently towards its front. Press E while reversing slowly. A slight angle is fine.",
         target: PARKINGS[p.parking ?? 0],

@@ -106,7 +106,7 @@ test("UI: kiosk totals include one fee, reservation closes kiosk without placing
   assert.equal(doc.getElementById("order-count")!.textContent, "0");
   assert.match(doc.getElementById("receipt-total")!.textContent!, /15.10/);
   assert.equal(run("state.me.phase"), "walk-truck");
-  assert.match(doc.getElementById("pickup-location")!.textContent!, /L0/);
+  assert.match(doc.getElementById("pickup-location")!.textContent!, /P0/);
   (doc.getElementById("cancel-order") as HTMLElement).click();
   assert.equal(doc.getElementById("cancel-dialog")!.hasAttribute("open"), true);
   assert.equal(

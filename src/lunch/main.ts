@@ -92,7 +92,7 @@ function receive(next: Snapshot) {
     joystick.reset();
     if (next.me.phase === "walk-truck")
       toast(
-        `Your trailer is ready at L0${next.me.parking! + 1}. Get back in your truck.`,
+        `Your trailer is ready at P0${next.me.parking! + 1}. Get back in your truck.`,
       );
     if (next.me.phase === "complete")
       toast(
@@ -319,7 +319,7 @@ function paint() {
   });
   $("pickup-location").textContent =
     p.parking !== null
-      ? `Your trailer · L0${p.parking + 1}`
+      ? `Your trailer · P0${p.parking + 1}`
       : p.phase === "complete"
         ? "✓ Order placed"
         : "Follow the ground arrows to your next stop.";
@@ -403,7 +403,7 @@ function drawMap() {
     c.fillStyle = "#234e44";
     c.font = "10px system-ui";
     c.textAlign = "center";
-    c.fillText(String(b.id + 1), x(b.x), z(b.z + 5));
+    c.fillText(`P0${b.id + 1}`, x(b.x), z(b.z + 5));
   }
   c.fillStyle = "#d0a854";
   c.fillRect(x(PARK.x) - 6, z(PARK.z) - 12, 12, 26);

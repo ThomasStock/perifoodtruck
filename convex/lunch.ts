@@ -7,6 +7,7 @@ import {
 import { v } from "convex/values";
 import {
   chooseParking,
+  normalizeParking,
   exited,
   interact as applyInteraction,
   KIOSK,
@@ -48,14 +49,14 @@ async function player(ctx: QueryCtx | MutationCtx, session?: string) {
   if (!p) throw new Error("Please sign in first.");
   if (session && p.session !== session)
     throw new Error("Your truck is active in another tab. Sign in here again.");
-  return p;
+  return { ...p, parking: normalizeParking(p.parking) };
 }
 const publicPlayer = (p: Player): Player => ({
   email: p.email,
   truck: p.truck,
   driver: p.driver,
   phase: p.phase,
-  parking: p.parking,
+  parking: normalizeParking(p.parking),
   lines: p.lines,
   subtotalCents: p.subtotalCents,
   feeCents: p.feeCents,
@@ -185,7 +186,7 @@ export const reserve = mutation({
       .filter(
         (o) => o.parking !== null && ["walk-truck", "pickup"].includes(o.phase),
       )
-      .map((o) => o.parking!);
+      .map((o) => normalizeParking(o.parking)!);
     const parking = chooseParking(occupied, Math.random());
     await ctx.db.patch(p._id, { ...priced, parking, phase: "walk-truck" });
   },

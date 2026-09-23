@@ -2,6 +2,7 @@ import { ConvexClient } from "convex/browser";
 import { makeFunctionReference } from "convex/server";
 import {
   chooseParking,
+  normalizeParking,
   exited,
   interact,
   recover,
@@ -98,6 +99,7 @@ export function preview(
     state.me.driver = { ...KIOSK };
     state.me.truck.z = 43;
   }
+  state.me.parking = normalizeParking(state.me.parking);
   const publish = () => {
     try {
       localStorage.setItem(
