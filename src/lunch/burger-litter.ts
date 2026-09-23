@@ -11,14 +11,27 @@ export class BurgerLitter {
       [0.34, 0.1, 0.17, 0x64402c],
       [0.37, 0.045, 0.245, 0x7eac4a],
       [0.34, 0.045, 0.28, 0xffc746],
-      [0.34, 0.19, 0.39, 0xeab66b],
+      [0.34, 0.22, 0.3, 0xeab66b],
     ]) {
+      const isTopBun = color === 0xeab66b;
+      const geometry = isTopBun
+        ? new THREE.SphereGeometry(
+            radius,
+            24,
+            12,
+            0,
+            Math.PI * 2,
+            0,
+            Math.PI / 2,
+          )
+        : new THREE.CylinderGeometry(radius, radius * 0.94, height, 24);
+      if (isTopBun) geometry.scale(1, height / radius, 1);
       const mesh = new THREE.InstancedMesh(
-        new THREE.CylinderGeometry(radius, radius * 0.94, height, 10),
+        geometry,
         new THREE.MeshStandardMaterial({
           color,
           roughness: 0.9,
-          flatShading: true,
+          flatShading: false,
         }),
         100,
       );
