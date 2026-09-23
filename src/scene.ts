@@ -14,6 +14,7 @@ import {
   YARD,
 } from "./game/simulation";
 import { DriverRig } from "./rig";
+import { DriverBreak } from "./driver-break";
 import { RigWheels } from "./wheels";
 import { PredictionPath } from "./prediction";
 import { RouteDots } from "./route";
@@ -96,6 +97,7 @@ export class YardScene {
   private gateAngle = 0;
   private env: THREE.WebGLRenderTarget;
   private rig = new DriverRig(this.driver);
+  private driverBreaks: DriverBreak[] = [];
   private lamps = new RigLamps();
   private dockArrival = new DockArrival();
   private operatorRig = new DriverRig(this.operator);
@@ -341,6 +343,10 @@ export class YardScene {
       box.position.copy(cab.position);
       box.rotation.y = t.trailerHeading;
       parked.add(cab, box);
+      const person = new THREE.Group();
+      person.add(driver.scene.clone(true));
+      this.scene.add(person);
+      this.driverBreaks.push(new DriverBreak(person));
     }
     for (const mesh of mergeByMaterial(parked)) this.scene.add(mesh);
     // Only the player's lamps work; the parked rigs above keep the paint.
@@ -387,6 +393,9 @@ export class YardScene {
     this.trailer.rotation.y = s.truck.trailerHeading;
     this.wheels.update(s.truck, this.reducedMotion);
     this.rig.update(s, input, dt, this.reducedMotion);
+    this.driverBreaks.forEach((person, i) =>
+      person.update(staticRigs[i], true, dt, this.reducedMotion),
+    );
     this.lamps.update(lampState(s.truck, input, started && !walking(s)));
     if (!this.lunchMode)
       this.operatorRig.stand(
