@@ -285,3 +285,17 @@ test("hidden C hold starts an isolated spectator without Google or preview persi
   assert.equal(dom.window.localStorage.getItem("lunch-kiosk-preview"), null);
   dom.window.close();
 });
+
+test("kiosk action takes priority over burger controls", async () => {
+  const { dom, run, doc } = await game();
+  await run('state.me.phase = "walk-kiosk"; paint()');
+  assert.equal(doc.getElementById("action-wrap")!.hidden, false);
+  assert.equal(
+    doc.getElementById("action-text")!.textContent,
+    "Open lunch menu",
+  );
+  assert.equal(doc.getElementById("burger-controls")!.hidden, true);
+  await run("state.me.driver = {x:0,z:0}; paint()");
+  assert.equal(doc.getElementById("burger-controls")!.hidden, false);
+  dom.window.close();
+});

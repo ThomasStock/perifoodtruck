@@ -361,7 +361,7 @@ function paint() {
   $("action-text").textContent = prompt;
   $<HTMLButtonElement>("action").disabled = busy;
   const walk = walking(p);
-  $("burger-controls").hidden = !canThrow(p);
+  $("burger-controls").hidden = !canThrow(p) || !!prompt;
   $("world").classList.toggle("burger-aim", canThrow(p));
   $("clean-burger").hidden = !closestBurger(p.driver, state.burgers ?? []);
   $("touch").hidden = walk;
