@@ -342,7 +342,7 @@ export class YardScene {
       box.rotation.y = t.trailerHeading;
       parked.add(cab, box);
     }
-    this.scene.add(...mergeByMaterial(parked));
+    for (const mesh of mergeByMaterial(parked)) this.scene.add(mesh);
     // Only the player's lamps work; the parked rigs above keep the paint.
     this.lamps.bind(this.tractor, this.trailer);
     // Compile every shader before play starts, including the ones for objects
