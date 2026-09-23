@@ -47,7 +47,7 @@ $("app").innerHTML = `<div id="world"></div>
 <header><a class="brand" href="/"><img src="/brand/peripass.svg" alt="Peripass"><small>LUNCH RUN</small></a><div class="top-right"><span id="connection">Welcome to the yard</span><button id="orders-button">Orders <b id="order-count">0</b></button><button id="camera" aria-label="Switch camera" title="Camera (C)">▣</button><button id="help" aria-label="How to play">?</button></div></header>
 <section id="login" class="welcome panel"><div class="eyebrow">YOUR LUNCH. YOUR DRIVE.</div><h1>Park your truck.<br><em>Pick your lunch.</em></h1><p>Order at the kiosk, collect your trailer and drive out of the yard to place your order.</p><div class="intro-steps"><span>01 · KIOSK</span><span>02 · PICKUP</span><span>03 · EXIT</span></div><div id="google-signin"></div><p id="setup-note">Loading the yard…</p><button id="preview" class="primary" hidden>Local preview ↗</button><small>Your Google email appears on your truck and trailer.</small></section>
 <aside id="mission" class="panel" hidden><div id="step" class="eyebrow"></div><h2 id="objective"></h2><p id="hint"></p><ol class="progress"><li>Parking</li><li>Kiosk</li><li>Pickup</li><li>Exit</li></ol><div id="pickup-location"></div></aside>
-<aside id="receipt" class="panel" hidden><div class="eyebrow">YOUR LUNCH</div><h3 id="receipt-status">Nothing ordered yet</h3><div id="receipt-lines"></div><div id="receipt-total"></div><p id="receipt-note"></p><button id="cancel-order" class="cancel-order" hidden>Cancel order</button></aside>
+<aside id="receipt" class="panel" hidden><button id="lunch-summary" aria-label="View your lunch details"><span>Your lunch</span><strong id="lunch-summary-total"></strong><span aria-hidden="true">⌄</span></button><div class="eyebrow">YOUR LUNCH</div><h3 id="receipt-status">Nothing ordered yet</h3><div id="receipt-lines"></div><div id="receipt-total"></div><p id="receipt-note"></p><button id="cancel-order" class="cancel-order" hidden>Cancel order</button></aside>
 <button id="map-button" class="map panel" hidden aria-label="Yard overview"><div class="eyebrow">YARD OVERVIEW ↗</div><canvas id="map" width="320" height="330"></canvas><small>● YOU <span>○ GHOSTS</span></small></button>
 <div id="target-label" hidden></div><div id="action-wrap" hidden><button id="action" class="primary"><kbd>E</kbd><span id="action-text"></span></button></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
@@ -55,7 +55,7 @@ $("app").innerHTML = `<div id="world"></div>
 <div id="touch" hidden><div><button data-key="a" aria-label="Left">←</button><button data-key="d" aria-label="Right">→</button></div><div><button data-key="s" aria-label="Reverse">↓</button><button data-key="w" aria-label="Forward">↑</button><button id="brake-turbo" data-key=" " aria-label="Turbo" title="Hold for turbo">⚡</button></div></div>
 <div id="walk-joystick" class="walking-joystick" aria-label="Walk" hidden><span class="joystick-knob"></span></div>
 <dialog id="kiosk-dialog"><div class="kiosk-header"><div><div class="eyebrow">PERIPASS · LUNCH KIOSK</div><h2>What are you craving?</h2></div><button id="close-kiosk" aria-label="Close kiosk">×</button></div><div class="kiosk-layout"><section class="menu"><nav aria-label="Menu categories">${CATEGORIES.map((c) => `<button data-category="${c}" class="category">${c}</button>`).join("")}</nav><div id="products"></div></section><aside class="checkout"><div class="eyebrow">YOUR ORDER</div><h3>Good food ahead.</h3><div id="cart-lines"></div><div id="cart-totals"></div><p id="cart-error" role="alert"></p><button id="reserve" class="primary" disabled>Confirm & collect trailer ↗</button><small>Your order is only placed when you drive your trailer out of the yard.</small></aside></div></dialog>
-<dialog id="cancel-dialog"><div class="dialog-heading"><h2>Cancel your order?</h2></div><p>Your lunch will be removed from the order list and your trailer released. You will return to the starting point and can order again.</p><div class="cancel-actions"><button id="confirm-cancel" class="primary">Yes, cancel order</button><button data-close="cancel-dialog">Keep my order</button></div></dialog>
+<dialog id="lunch-details"><div class="dialog-heading"><h2>Your lunch</h2><button data-close="lunch-details" aria-label="Close lunch details">×</button></div><div id="lunch-details-content"></div><button id="details-cancel" class="cancel-order">Cancel order</button></dialog><dialog id="cancel-dialog"><div class="dialog-heading"><h2>Cancel your order?</h2></div><p>Your lunch will be removed from the order list and your trailer released. You will return to the starting point and can order again.</p><div class="cancel-actions"><button id="confirm-cancel" class="primary">Yes, cancel order</button><button data-close="cancel-dialog">Keep my order</button></div></dialog>
 <dialog id="orders-dialog"><div class="dialog-heading"><div><div class="eyebrow">LUNCH TOGETHER</div><h2>Placed orders</h2></div><button data-close="orders-dialog" aria-label="Close orders">×</button></div><p class="muted">Only trailers that have left the yard count as placed orders.</p><div id="orders-content"></div></dialog>
 <dialog id="help-dialog"><div class="dialog-heading"><h2>How your lunch run works</h2><button data-close="help-dialog" aria-label="Close help">×</button></div><ol><li><b>Park in P02.</b> You start without a trailer. Stop and press E to get out.</li><li><b>Walk to the kiosk.</b> Choose fries, burgers, snacks and sauces. Your total includes a €1 order fee.</li><li><b>Collect your trailer.</b> Confirm at the kiosk, get back in and follow the marker to your name. The gate is open. Back gently towards your trailer and press E to attach. A slight angle is fine.</li><li><b>Drive through EXIT.</b> Use the opening in the right-hand fence. Your order is placed when your entire trailer is outside.</li></ol><p>Other players and their trailers are ghosts: visible, but they never block you. After placing your order, you can keep driving as a ghost. Hold Space or the mobile ⚡ button while driving for turbo.</p></dialog>`;
 let scene: LunchScene,
@@ -324,6 +324,18 @@ function paint() {
   $("step").textContent = `0${obj.step} / LUNCH RUN`;
   $("objective").textContent = obj.title;
   $("hint").textContent = obj.detail;
+  $("mission").dataset.brief = {
+    arrive: "Park in P02 · Press E to get out",
+    "walk-kiosk": "Follow the arrows to the kiosk",
+    kiosk: "Choose your lunch",
+    "walk-truck": "Return to your truck · Press E",
+    pickup: `Trailer P0${(p.parking ?? 0) + 1} · Back nearby, press E`,
+    exit: "Bring your trailer into the marked exit",
+    complete: "Order saved · Free to explore",
+  }[p.phase];
+  $("lunch-summary-total").textContent = p.lines.length
+    ? euro(p.totalCents)
+    : "View";
   document.querySelectorAll(".progress li").forEach((li, i) => {
     li.classList.toggle("done", i < obj.step - 1 || p.phase === "complete");
     li.classList.toggle("current", i === obj.step - 1);
@@ -443,6 +455,18 @@ function drawMap() {
 $("preview").onclick = () => void start();
 $("signout").onclick = () => signout();
 $("action").onclick = () => void action("interact");
+$("lunch-summary").onclick = () => {
+  keys.clear();
+  joystick.reset();
+  $("lunch-details-content").innerHTML =
+    `<h3>${$("receipt-status").textContent}</h3>${$("receipt-lines").innerHTML}${$("receipt-total").innerHTML}<p>${$("receipt-note").textContent}</p>`;
+  $("details-cancel").hidden = !state?.me.lines.length;
+  $<HTMLDialogElement>("lunch-details").showModal();
+};
+$("details-cancel").onclick = () => {
+  $<HTMLDialogElement>("lunch-details").close();
+  $("cancel-order").click();
+};
 $("cancel-order").onclick = () => {
   keys.clear();
   $<HTMLDialogElement>("cancel-dialog").showModal();

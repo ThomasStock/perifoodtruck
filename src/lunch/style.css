@@ -1104,3 +1104,105 @@ dialog ol {
 #cancel-dialog p {
   line-height: 1.6;
 }
+
+#lunch-summary {
+  display: none;
+}
+#lunch-details {
+  width: min(440px, calc(100vw - 24px));
+  max-height: 80dvh;
+}
+#lunch-details-content p {
+  color: #71877e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+@media (max-width: 760px), (pointer: coarse) and (max-width: 1100px) {
+  header {
+    height: 62px;
+    padding: 10px 12px;
+  }
+  .brand img {
+    width: 100px;
+  }
+  .brand small {
+    display: none;
+  }
+  #mission {
+    top: 68px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+    padding: 11px 14px;
+    border-radius: 16px;
+  }
+  #mission .eyebrow,
+  #mission p,
+  #mission .progress,
+  #pickup-location {
+    display: none;
+  }
+  #mission h2 {
+    font-size: 15px;
+    letter-spacing: -0.3px;
+    margin: 0 0 4px;
+  }
+  #mission::after {
+    content: attr(data-brief);
+    display: block;
+    font-size: 10px;
+    line-height: 1.4;
+    color: #71877e;
+  }
+  #receipt {
+    top: 140px;
+    right: 12px;
+    width: auto;
+    max-width: calc(100vw - 24px);
+    padding: 0;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  #receipt > :not(#lunch-summary) {
+    display: none;
+  }
+  #lunch-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 24px;
+    font-size: 11px;
+  }
+  #lunch-summary strong {
+    color: #008e78;
+    font-size: 12px;
+  }
+  .map {
+    width: auto;
+    padding: 12px 14px;
+    border-radius: 22px;
+    bottom: 151px;
+    right: 12px;
+  }
+  .map canvas,
+  .map small {
+    display: none;
+  }
+  .map .eyebrow {
+    font-size: 8px;
+    margin: 0;
+  }
+  #lunch-details {
+    padding: 22px;
+    border-radius: 22px;
+  }
+  #lunch-details h2 {
+    font-size: 22px;
+  }
+  #lunch-details .order-line {
+    font-size: 12px;
+  }
+}
