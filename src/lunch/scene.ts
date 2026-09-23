@@ -1,4 +1,5 @@
 import { RemoteMotion, applyRemoteTruckPose } from "./remote-motion";
+import { Barbecue } from "./barbecue";
 import { BurgerLitter } from "./burger-litter";
 import type { Burger } from "./burgers";
 import * as THREE from "three";
@@ -130,6 +131,7 @@ export class LunchScene {
   private ghost = false;
   private elapsed = 0;
   private arrows: THREE.InstancedMesh;
+  private barbecue = new Barbecue();
   private burgerSign = createBurgerSign();
   private burgerLitter = new BurgerLitter();
   setBurgers(burgers: Burger[]) {
@@ -155,7 +157,7 @@ export class LunchScene {
     this.base = new YardScene(container, true);
     this.base.scene.add(this.burgerLitter.root);
     this.base.mode = "yard";
-    this.base.scene.add(this.burgerSign.root);
+    this.base.scene.add(this.burgerSign.root, this.barbecue.root);
     const arrow = new THREE.Shape();
     arrow.moveTo(-0.8, -0.18);
     arrow.lineTo(0.2, -0.18);
@@ -255,6 +257,7 @@ export class LunchScene {
   }
   async load() {
     await this.base.load();
+    this.barbecue.bind(this.base.driver);
     this.base.scene.add(this.arrows);
   }
   project(p: Point) {
@@ -282,6 +285,7 @@ export class LunchScene {
   }
   render(me: Player | null, players: Player[], input: Input, dt: number) {
     this.elapsed += dt;
+    this.barbecue.update(dt, this.base.reducedMotion);
     this.burgerSign.burger.rotation.y = this.elapsed * 0.55;
     const local = me ?? {
       email: "",
