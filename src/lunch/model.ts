@@ -12,7 +12,7 @@ import {
   type Rect,
   type Truck,
 } from "../game/simulation";
-import type { OrderLine } from "./menu";
+import { euro, ORDER_FEE_CENTS, type OrderLine } from "./menu";
 export type Input = DrivingInput & { turbo?: boolean };
 export type { Truck, Point } from "../game/simulation";
 export const KIOSK = { x: -33.7, z: 28.2 };
@@ -258,7 +258,7 @@ export function objective(p: Player): {
       return {
         title: "What's for lunch?",
         detail:
-          "Walk to the kiosk and choose your lunch. A €1 fee applies per order.",
+          `Walk to the kiosk and choose your lunch. A ${euro(ORDER_FEE_CENTS)} fee applies per order.`,
         target: KIOSK,
         step: 2,
       };
