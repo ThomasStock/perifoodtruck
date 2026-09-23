@@ -101,10 +101,10 @@ export function pickupReady(p: Player) {
   return (
     p.phase === "pickup" &&
     !!bay &&
-    distance(p.truck, bay) < 3.6 &&
-    Math.abs(angle(p.truck.heading)) < 1.1 &&
-    p.truck.speed < -0.05 &&
-    p.truck.speed > -1.2 &&
+    distance(p.truck, bay) < 6 &&
+    Math.abs(angle(p.truck.heading)) < 1.5 &&
+    p.truck.speed <= 0.1 &&
+    p.truck.speed > -2.2 &&
     !overlap(rigRects(p.truck)[0], pickupBody(p)!)
   );
 }
@@ -264,7 +264,7 @@ export function objective(p: Player): {
       return {
         title: `Collect your trailer · P0${(p.parking ?? 0) + 1}`,
         detail:
-          "Find your trailer and back gently towards its front. Press E while reversing slowly. A slight angle is fine.",
+          "Back near the front of your trailer, then press E to attach. You can stop first; exact alignment is not needed.",
         target: PARKINGS[p.parking ?? 0],
         step: 3,
       };

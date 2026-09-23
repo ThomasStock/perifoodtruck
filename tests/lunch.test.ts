@@ -480,3 +480,27 @@ test("multiplayer accepts turbo speed and travel while still rejecting excessive
     /Invalid position/,
   );
 });
+
+test("hitching accepts a broad stopped approach without allowing ramming or remote pickup", () => {
+  const p = newPlayer("pickup@example.com");
+  p.phase = "pickup";
+  p.parking = 0;
+  p.truck = {
+    ...spawn(),
+    x: PARKINGS[0].x + 4,
+    z: PARKINGS[0].z + 2,
+    heading: 1.3,
+    trailerHeading: 0,
+    speed: 0,
+  };
+  assert.equal(
+    pickupReady(p),
+    true,
+    "stopped, offset and angled is close enough",
+  );
+  p.truck.speed = 2;
+  assert.equal(pickupReady(p), false, "forward ramming cannot hitch");
+  p.truck.speed = 0;
+  p.truck.x = PARKINGS[0].x + 7;
+  assert.equal(pickupReady(p), false, "must still be near own trailer");
+});
