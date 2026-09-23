@@ -189,17 +189,16 @@ export function validPose(t: Truck, p: Point) {
   );
 }
 export function interaction(p: Player): string {
-  if (p.phase === "arrive" && parked(p)) return "Stap uit · naar de kiosk";
+  if (p.phase === "arrive" && parked(p)) return "Get out · go to the kiosk";
   if (p.phase === "walk-kiosk" && distance(p.driver, KIOSK) < 2.4)
-    return "Open het lunchmenu";
+    return "Open lunch menu";
   if (p.phase === "walk-truck" && distance(p.driver, p.truck) < 5.3)
-    return "Stap in · haal je trailer op";
-  if (pickupReady(p)) return "Koppel jouw lunchtrailer";
+    return "Get in · collect your trailer";
+  if (pickupReady(p)) return "Attach your lunch trailer";
   return "";
 }
 export function interact(p: Player) {
-  if (!interaction(p))
-    throw new Error("Ga naar de markering en kom tot stilstand.");
+  if (!interaction(p)) throw new Error("Go to the marker and stop.");
   p.truck.speed = 0;
   if (p.phase === "arrive") {
     p.phase = "walk-kiosk";
@@ -225,49 +224,48 @@ export function objective(p: Player): {
   switch (p.phase) {
     case "arrive":
       return {
-        title: "Parkeer bij de kiosk",
-        detail:
-          "Rijd je truck zonder trailer naar P02. Stop tussen de lijnen en stap uit.",
+        title: "Park beside the kiosk",
+        detail: "Drive your truck to P02. Stop between the lines and get out.",
         target: PARK,
         step: 1,
       };
     case "walk-kiosk":
     case "kiosk":
       return {
-        title: "Wat eten we vandaag?",
+        title: "What's for lunch?",
         detail:
-          "Loop naar de kiosk en kies je lunch. Eén euro bestelkosten per bestelling.",
+          "Walk to the kiosk and choose your lunch. A €1 fee applies per order.",
         target: KIOSK,
         step: 2,
       };
     case "walk-truck":
       return {
-        title: "Je lunchtrailer staat klaar",
-        detail: `Loop terug naar je truck. Haal daarna je trailer op bij L0${(p.parking ?? 0) + 1}. Je bestelling is nog niet geplaatst.`,
+        title: "Your lunch trailer is ready",
+        detail: `Walk back to your truck, then collect your trailer at L0${(p.parking ?? 0) + 1}. Your order has not been placed yet.`,
         target: p.truck,
         step: 3,
       };
     case "pickup":
       return {
-        title: `Haal je trailer op · L0${(p.parking ?? 0) + 1}`,
+        title: `Collect your trailer · L0${(p.parking ?? 0) + 1}`,
         detail:
-          "De slagboom staat open. Zoek je naam, richt de cabine naar het zuiden en rijd achteruit naar de koppeling.",
+          "The gate is open. Find your name, face your cab south and reverse towards the hitch.",
         target: PARKINGS[p.parking ?? 0],
         step: 3,
       };
     case "exit":
       return {
-        title: "Rijd naar de uitgang",
+        title: "Drive to the exit",
         detail:
-          "Volg UITRIT naar de opening in het rechterhek. Zodra je hele trailer buiten is, wordt je bestelling geplaatst.",
+          "Follow EXIT to the opening in the right-hand fence. Your order is placed once your entire trailer is outside.",
         target: EXIT,
         step: 4,
       };
     case "complete":
       return {
-        title: "Je bestelling is geplaatst!",
+        title: "Your order is placed!",
         detail:
-          "Bedankt! Je lunch staat op de bestellijst. Je kunt als ghost blijven rondrijden.",
+          "Thanks! Your lunch is on the order list. You can keep driving as a ghost.",
         target: EXIT,
         step: 4,
       };

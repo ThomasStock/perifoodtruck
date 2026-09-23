@@ -37,19 +37,19 @@ const esc = (s: string) =>
       ]!,
   );
 $("app").innerHTML = `<div id="world"></div>
-<header><a class="brand" href="/"><img src="/brand/peripass.svg" alt="Peripass"><small>LUNCH RUN</small></a><div class="top-right"><span id="connection">Welkom op de yard</span><button id="orders-button">Bestellingen <b id="order-count">0</b></button><button id="camera" aria-label="Camera wisselen" title="Camera (C)">▣</button><button id="help" aria-label="Speluitleg">?</button></div></header>
-<section id="login" class="welcome panel"><div class="eyebrow">JE LUNCH. JOUW RIT.</div><h1>Even parkeren.<br><em>Lekker bestellen.</em></h1><p>Bestel aan de kiosk, haal je eigen trailer op en rijd de yard uit. Dan is je lunch besteld.</p><div class="intro-steps"><span>01 · KIOSK</span><span>02 · OPHALEN</span><span>03 · UITRIJDEN</span></div><div id="google-signin"></div><p id="setup-note">De yard wordt geladen…</p><button id="preview" class="primary" hidden>Lokale preview ↗</button><small>Je Google-email verschijnt op je truck en trailer.</small></section>
-<aside id="mission" class="panel" hidden><div id="step" class="eyebrow"></div><h2 id="objective"></h2><p id="hint"></p><ol class="progress"><li>Parkeren</li><li>Kiosk</li><li>Ophalen</li><li>Uitrijden</li></ol><div id="pickup-location"></div></aside>
-<aside id="receipt" class="panel" hidden><div class="eyebrow">JOUW LUNCH</div><h3 id="receipt-status">Nog niets besteld</h3><div id="receipt-lines"></div><div id="receipt-total"></div><p id="receipt-note"></p></aside>
-<button id="map-button" class="map panel" hidden aria-label="Yardoverzicht"><div class="eyebrow">YARDOVERZICHT ↗</div><canvas id="map" width="320" height="330"></canvas><small>● JIJ <span>○ GHOSTS</span></small></button>
+<header><a class="brand" href="/"><img src="/brand/peripass.svg" alt="Peripass"><small>LUNCH RUN</small></a><div class="top-right"><span id="connection">Welcome to the yard</span><button id="orders-button">Orders <b id="order-count">0</b></button><button id="camera" aria-label="Switch camera" title="Camera (C)">▣</button><button id="help" aria-label="How to play">?</button></div></header>
+<section id="login" class="welcome panel"><div class="eyebrow">YOUR LUNCH. YOUR DRIVE.</div><h1>Park your truck.<br><em>Pick your lunch.</em></h1><p>Order at the kiosk, collect your trailer and drive out of the yard to place your order.</p><div class="intro-steps"><span>01 · KIOSK</span><span>02 · PICKUP</span><span>03 · EXIT</span></div><div id="google-signin"></div><p id="setup-note">Loading the yard…</p><button id="preview" class="primary" hidden>Local preview ↗</button><small>Your Google email appears on your truck and trailer.</small></section>
+<aside id="mission" class="panel" hidden><div id="step" class="eyebrow"></div><h2 id="objective"></h2><p id="hint"></p><ol class="progress"><li>Parking</li><li>Kiosk</li><li>Pickup</li><li>Exit</li></ol><div id="pickup-location"></div></aside>
+<aside id="receipt" class="panel" hidden><div class="eyebrow">YOUR LUNCH</div><h3 id="receipt-status">Nothing ordered yet</h3><div id="receipt-lines"></div><div id="receipt-total"></div><p id="receipt-note"></p></aside>
+<button id="map-button" class="map panel" hidden aria-label="Yard overview"><div class="eyebrow">YARD OVERVIEW ↗</div><canvas id="map" width="320" height="330"></canvas><small>● YOU <span>○ GHOSTS</span></small></button>
 <div id="target-label" hidden></div><div id="action-wrap" hidden><button id="action" class="primary"><kbd>E</kbd><span id="action-text"></span></button></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
-<footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Rijden & lopen</span><span><kbd>SPACE</kbd> Rem</span><span><kbd>SHIFT</kbd> Precisie</span><button id="recover">Truck herstellen</button><button id="signout">Afmelden</button></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
-<div id="touch" hidden><div><button data-key="a" aria-label="Links">←</button><button data-key="d" aria-label="Rechts">→</button></div><div><button data-key="s" aria-label="Achteruit">↓</button><button data-key="w" aria-label="Vooruit">↑</button><button data-key=" " aria-label="Remmen">■</button></div></div>
-<div id="walk-joystick" class="walking-joystick" aria-label="Lopen" hidden><span class="joystick-knob"></span></div>
-<dialog id="kiosk-dialog"><div class="kiosk-header"><div><div class="eyebrow">PERIPASS · LUNCHKIOSK</div><h2>Waar heb je zin in?</h2></div><button id="close-kiosk" aria-label="Kiosk sluiten">×</button></div><div class="kiosk-layout"><section class="menu"><nav aria-label="Menucategorieën">${CATEGORIES.map((c) => `<button data-category="${c}" class="category">${c}</button>`).join("")}</nav><div id="products"></div></section><aside class="checkout"><div class="eyebrow">JOUW BESTELLING</div><h3>Een goede keuze.</h3><div id="cart-lines"></div><div id="cart-totals"></div><p id="cart-error" role="alert"></p><button id="reserve" class="primary" disabled>Bevestig & haal trailer op ↗</button><small>Je bestelling wordt pas geplaatst als je met je trailer de yard uitrijdt.</small></aside></div></dialog>
-<dialog id="orders-dialog"><div class="dialog-heading"><div><div class="eyebrow">SAMEN AAN TAFEL</div><h2>Geplaatste bestellingen</h2></div><button data-close="orders-dialog" aria-label="Bestellingen sluiten">×</button></div><p class="muted">Alleen trailers die de yard hebben verlaten tellen mee.</p><div id="orders-content"></div></dialog>
-<dialog id="help-dialog"><div class="dialog-heading"><h2>Zo werkt je lunchrit</h2><button data-close="help-dialog" aria-label="Uitleg sluiten">×</button></div><ol><li><b>Parkeer op P02.</b> Je begint zonder trailer. Stop en druk E om uit te stappen.</li><li><b>Loop naar de kiosk.</b> Kies frieten, burgers en snacks. Je ziet het totaal inclusief €1 bestelkosten.</li><li><b>Haal jouw trailer op.</b> Bevestig aan de kiosk, stap weer in en volg de markering naar je eigen naam. De slagboom is open. Richt je cabine naar het zuiden, rijd achteruit naar de trailer en druk E.</li><li><b>Rijd door UITRIT.</b> Ga door de opening in het rechterhek. Pas als je hele trailer buiten is, wordt de bestelling geplaatst.</li></ol><p>Andere spelers en hun trailers zijn ghosts: zichtbaar, maar ze blokkeren je niet. Na het plaatsen kun je zelf als ghost blijven rijden.</p></dialog>`;
+<footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Drive & walk</span><span><kbd>SPACE</kbd> Brake</span><span><kbd>SHIFT</kbd> Precision</span><button id="recover">Recover truck</button><button id="signout">Sign out</button></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
+<div id="touch" hidden><div><button data-key="a" aria-label="Left">←</button><button data-key="d" aria-label="Right">→</button></div><div><button data-key="s" aria-label="Reverse">↓</button><button data-key="w" aria-label="Forward">↑</button><button data-key=" " aria-label="Brake">■</button></div></div>
+<div id="walk-joystick" class="walking-joystick" aria-label="Walk" hidden><span class="joystick-knob"></span></div>
+<dialog id="kiosk-dialog"><div class="kiosk-header"><div><div class="eyebrow">PERIPASS · LUNCH KIOSK</div><h2>What are you craving?</h2></div><button id="close-kiosk" aria-label="Close kiosk">×</button></div><div class="kiosk-layout"><section class="menu"><nav aria-label="Menu categories">${CATEGORIES.map((c) => `<button data-category="${c}" class="category">${c}</button>`).join("")}</nav><div id="products"></div></section><aside class="checkout"><div class="eyebrow">YOUR ORDER</div><h3>Good food ahead.</h3><div id="cart-lines"></div><div id="cart-totals"></div><p id="cart-error" role="alert"></p><button id="reserve" class="primary" disabled>Confirm & collect trailer ↗</button><small>Your order is only placed when you drive your trailer out of the yard.</small></aside></div></dialog>
+<dialog id="orders-dialog"><div class="dialog-heading"><div><div class="eyebrow">LUNCH TOGETHER</div><h2>Placed orders</h2></div><button data-close="orders-dialog" aria-label="Close orders">×</button></div><p class="muted">Only trailers that have left the yard count as placed orders.</p><div id="orders-content"></div></dialog>
+<dialog id="help-dialog"><div class="dialog-heading"><h2>How your lunch run works</h2><button data-close="help-dialog" aria-label="Close help">×</button></div><ol><li><b>Park in P02.</b> You start without a trailer. Stop and press E to get out.</li><li><b>Walk to the kiosk.</b> Choose fries, burgers, snacks and sauces. Your total includes a €1 order fee.</li><li><b>Collect your trailer.</b> Confirm at the kiosk, get back in and follow the marker to your name. The gate is open. Face your cab south, reverse towards the trailer and press E.</li><li><b>Drive through EXIT.</b> Use the opening in the right-hand fence. Your order is placed when your entire trailer is outside.</li></ol><p>Other players and their trailers are ghosts: visible, but they never block you. After placing your order, you can keep driving as a ghost.</p></dialog>`;
 let scene: LunchScene,
   backend: Backend | null = null,
   state: Snapshot | null = null;
@@ -57,7 +57,7 @@ let loaded = false,
   busy = false,
   previewMode = false,
   restorePose = true,
-  category: Category = "Frieten",
+  category: Category = "Fries",
   cart: CartItem[] = [];
 let moving: Promise<void> | null = null,
   lastSend = 0,
@@ -76,7 +76,7 @@ function toast(s: string) {
 function message(e: unknown) {
   return e instanceof Error
     ? e.message.replace(/\[CONVEX[^\]]*\]\s*/g, "")
-    : "Er ging iets mis. Probeer opnieuw.";
+    : "Something went wrong. Please try again.";
 }
 function receive(next: Snapshot) {
   const old = state?.me.phase;
@@ -91,11 +91,11 @@ function receive(next: Snapshot) {
     joystick.reset();
     if (next.me.phase === "walk-truck")
       toast(
-        `Je trailer staat klaar bij L0${next.me.parking! + 1}. Stap weer in je truck.`,
+        `Your trailer is ready at L0${next.me.parking! + 1}. Get back in your truck.`,
       );
     if (next.me.phase === "complete")
       toast(
-        "Bestelling geplaatst! Je hele trailer is door de uitgang. Smakelijk!",
+        "Order placed! Your entire trailer has cleared the exit. Enjoy your lunch!",
       );
   }
   const dialog = $<HTMLDialogElement>("kiosk-dialog");
@@ -104,15 +104,13 @@ function receive(next: Snapshot) {
     dialog.showModal();
   }
   if (next.me.phase !== "kiosk" && dialog.open) dialog.close();
-  $("connection").textContent = previewMode
-    ? "● Lokale preview"
-    : "● Live yard";
+  $("connection").textContent = previewMode ? "● Local preview" : "● Live yard";
   paint();
 }
 async function start(token?: string) {
   if (!loaded || busy) return;
   busy = true;
-  $("setup-note").textContent = "Aanmelden…";
+  $("setup-note").textContent = "Signing in…";
   try {
     backend?.close();
     backend = null;
@@ -149,6 +147,7 @@ async function start(token?: string) {
     $("setup-note").textContent = message(e);
   } finally {
     busy = false;
+    if ($<HTMLDialogElement>("kiosk-dialog").open) renderCart();
   }
 }
 async function flush() {
@@ -206,18 +205,18 @@ function signout() {
   ])
     $(id).hidden = true;
   scene.mode = "yard";
-  $("setup-note").textContent = "Meld je aan om verder te gaan.";
+  $("setup-note").textContent = "Sign in to continue.";
 }
 function lineHtml(lines: OrderLine[], editable = false) {
   return lines
     .map(
       (l) =>
-        `<div class="order-line"><div><b>${esc(l.name)}</b><small>${euro(l.unitCents)} per ${l.freeQuantity ? "duo" : "stuk"}</small>${l.freeQuantity ? `<small class="deal-detail">${l.quantity} betaald + ${l.freeQuantity} gratis · ${l.quantity + l.freeQuantity} stuks</small>` : ""}</div>${editable ? `<div class="quantity"><button data-minus="${l.productId}" aria-label="Minder ${esc(l.name)}">−</button><span>${l.quantity}</span><button data-plus="${l.productId}" aria-label="Meer ${esc(l.name)}">+</button></div>` : `<span>× ${l.quantity + (l.freeQuantity ?? 0)}</span>`}<strong>${euro(l.unitCents * l.quantity)}</strong></div>`,
+        `<div class="order-line"><div><b>${esc(MENU.find((p) => p.id === l.productId)?.name ?? l.name)}</b><small>${euro(l.unitCents)} per ${l.freeQuantity ? "pair" : "piece"}</small>${l.freeQuantity ? `<small class="deal-detail">${l.quantity} paid + ${l.freeQuantity} free · ${l.quantity + l.freeQuantity} pieces</small>` : ""}</div>${editable ? `<div class="quantity"><button data-minus="${l.productId}" aria-label="Fewer ${esc(l.name)}">−</button><span>${l.quantity}</span><button data-plus="${l.productId}" aria-label="More ${esc(l.name)}">+</button></div>` : `<span>× ${l.quantity + (l.freeQuantity ?? 0)}</span>`}<strong>${euro(l.unitCents * l.quantity)}</strong></div>`,
     )
     .join("");
 }
 function totalsHtml(subtotal: number, fee: number, total: number) {
-  return `<div class="totals"><div><span>Subtotaal</span><b>${euro(subtotal)}</b></div><div><span>Bestelkosten</span><b>${euro(fee)}</b></div><div class="grand-total"><span>Totaal</span><b>${euro(total)}</b></div></div>`;
+  return `<div class="totals"><div><span>Subtotal</span><b>${euro(subtotal)}</b></div><div><span>Order fee</span><b>${euro(fee)}</b></div><div class="grand-total"><span>Total</span><b>${euro(total)}</b></div></div>`;
 }
 function renderMenu() {
   document
@@ -241,10 +240,10 @@ function renderMenu() {
           }
           const quantity =
             cart.find((l) => l.productId === p.id)?.quantity ?? 0;
-          return `<article class="product"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${p.promotion ? '<span class="promotion">1 + 1 gratis</span><small class="deal-detail">2 stuks voor deze prijs</small>' : ""}${p.description ? `<p class="product-description">${esc(p.description)}</p>` : ""}${quantity ? `<span class="in-cart">${quantity * (p.promotion ? 2 : 1)} in je mandje</span>` : ""}</div>${image}<button class="add-product" data-plus="${p.id}" aria-label="Voeg ${esc(p.name)} toe">+</button></article>`;
+          return `<article class="product"><div class="product-copy"><h3>${esc(p.name)}</h3><b>${euro(p.cents)}</b>${p.promotion ? '<span class="promotion">1 + 1 free</span><small class="deal-detail">2 pieces for this price</small>' : ""}${p.description ? `<p class="product-description">${esc(p.description)}</p>` : ""}${quantity ? `<span class="in-cart">${quantity * (p.promotion ? 2 : 1)} in your basket</span>` : ""}</div>${image}<button class="add-product" data-plus="${p.id}" aria-label="Add ${esc(p.name)}">+</button></article>`;
         })
         .join("")
-    : '<div class="menu-empty"><h3>Geen producten</h3><p>Kies een andere categorie.</p></div>';
+    : '<div class="menu-empty"><h3>No products</h3><p>Choose another category.</p></div>';
   renderCart();
 }
 function renderCart() {
@@ -262,7 +261,7 @@ function renderCart() {
   }
   $("cart-lines").innerHTML = price.lines.length
     ? lineHtml(price.lines, true)
-    : '<p class="empty">Je mandje is nog leeg.<br>Kies iets lekkers uit het menu.</p>';
+    : '<p class="empty">Your basket is empty.<br>Pick something tasty from the menu.</p>';
   $("cart-totals").innerHTML = totalsHtml(
     price.subtotalCents,
     price.feeCents,
@@ -306,10 +305,10 @@ function paint() {
   });
   $("pickup-location").textContent =
     p.parking !== null
-      ? `Jouw trailer · L0${p.parking + 1}`
+      ? `Your trailer · L0${p.parking + 1}`
       : p.phase === "complete"
-        ? "✓ Bestelling geplaatst"
-        : "Alle docks zijn gesloten voor lunch.";
+        ? "✓ Order placed"
+        : "All docks are closed for lunch.";
   $("action-wrap").hidden = !prompt;
   $("action-text").textContent = prompt;
   $<HTMLButtonElement>("action").disabled = busy;
@@ -327,22 +326,22 @@ function paint() {
     lastReceipt = signature;
     $("receipt-status").textContent =
       p.phase === "complete"
-        ? "✓ Geplaatst"
+        ? "✓ Placed"
         : p.lines.length
-          ? "Klaar om op te halen"
-          : "Bestel aan de kiosk";
+          ? "Ready for pickup"
+          : "Order at the kiosk";
     $("receipt-lines").innerHTML = p.lines.length
       ? lineHtml(p.lines)
-      : '<p class="empty">Parkeer en loop naar de kiosk om je lunch te kiezen.</p>';
+      : '<p class="empty">Park and walk to the kiosk to choose your lunch.</p>';
     $("receipt-total").innerHTML = p.lines.length
       ? totalsHtml(p.subtotalCents, p.feeCents, p.totalCents)
       : "";
     $("receipt-note").textContent =
       p.phase === "complete"
-        ? "Je bestelling is opgeslagen. Smakelijk!"
+        ? "Your order is saved. Enjoy your lunch!"
         : p.lines.length
-          ? "Nog niet geplaatst. Rijd met je trailer door UITRIT."
-          : "Frieten · Burgers · Snacks · Sauzen";
+          ? "Not placed yet. Drive your trailer through EXIT."
+          : "Fries · Burgers · Snacks · Sauces";
     $("order-count").textContent = String(state.orders.length);
     const counts = new Map<
       string,
@@ -351,7 +350,7 @@ function paint() {
     for (const o of state.orders)
       for (const l of o.lines) {
         const row = counts.get(l.productId) ?? {
-          name: l.name,
+          name: MENU.find((p) => p.id === l.productId)?.name ?? l.name,
           quantity: 0,
           free: 0,
         };
@@ -360,8 +359,8 @@ function paint() {
         counts.set(l.productId, row);
       }
     $("orders-content").innerHTML = state.orders.length
-      ? `<section class="order-totals"><h3>Te bestellen</h3>${[...counts.values()].map((l) => `<div><span>${esc(l.name)}</span><b>× ${l.quantity + l.free}${l.free ? ` <small>(${l.quantity} betaald + ${l.free} gratis)</small>` : ""}</b></div>`).join("")}<div><span>Bestelkosten · ${state.orders.length} bestellingen</span><b>${euro(state.orders.reduce((sum, o) => sum + o.feeCents, 0))}</b></div><div class="grand-total"><span>Totaal</span><b>${euro(state.orders.reduce((sum, o) => sum + o.totalCents, 0))}</b></div></section>${state.orders.map((o) => `<section class="person-order ${o.email === p.email ? "you" : ""}"><h3>${esc(o.email)} ${o.email === p.email ? "<small>JIJ</small>" : ""}</h3>${lineHtml(o.lines)}${totalsHtml(o.subtotalCents, o.feeCents, o.totalCents)}</section>`).join("")}`
-      : '<div class="empty">Nog geen geplaatste bestellingen.<br>Rijd met je trailer door de uitgang om jouw lunch toe te voegen.</div>';
+      ? `<section class="order-totals"><h3>Items to order</h3>${[...counts.values()].map((l) => `<div><span>${esc(l.name)}</span><b>× ${l.quantity + l.free}${l.free ? ` <small>(${l.quantity} paid + ${l.free} free)</small>` : ""}</b></div>`).join("")}<div><span>Order fee · ${state.orders.length} orders</span><b>${euro(state.orders.reduce((sum, o) => sum + o.feeCents, 0))}</b></div><div class="grand-total"><span>Total</span><b>${euro(state.orders.reduce((sum, o) => sum + o.totalCents, 0))}</b></div></section>${state.orders.map((o) => `<section class="person-order ${o.email === p.email ? "you" : ""}"><h3>${esc(o.email)} ${o.email === p.email ? "<small>YOU</small>" : ""}</h3>${lineHtml(o.lines)}${totalsHtml(o.subtotalCents, o.feeCents, o.totalCents)}</section>`).join("")}`
+      : '<div class="empty">No orders placed yet.<br>Drive your trailer through the exit to add your lunch.</div>';
   }
   const pos = scene.project(obj.target);
   $("target-label").hidden =
@@ -370,14 +369,14 @@ function paint() {
   $("target-label").style.top = `${pos.y}px`;
   $("target-label").textContent =
     p.phase === "pickup"
-      ? `JOUW TRAILER · L0${p.parking! + 1}`
+      ? `YOUR TRAILER · L0${p.parking! + 1}`
       : p.phase === "exit"
-        ? "UITRIT →"
+        ? "EXIT →"
         : p.phase === "arrive"
-          ? "P02 · PARKEREN"
+          ? "P02 · PARKING"
           : p.phase === "walk-truck"
-            ? "JOUW TRUCK"
-            : "LUNCHKIOSK";
+            ? "YOUR TRUCK"
+            : "LUNCH KIOSK";
   drawMap();
 }
 function drawMap() {
@@ -414,7 +413,7 @@ function drawMap() {
   c.fillStyle = "#00a990";
   c.fillRect(x(EXIT.x), z(EXIT.z) - 12, 34, 24);
   c.fillStyle = "#fff";
-  c.fillText("UIT →", x(EXIT.x) + 17, z(EXIT.z) + 3);
+  c.fillText("EXIT →", x(EXIT.x) + 17, z(EXIT.z) + 3);
   for (const p of [
     ...state.players.filter(
       (p) => p.email !== state!.me.email && Date.now() - p.updatedAt < 15000,
@@ -560,7 +559,7 @@ async function boot() {
     requestAnimationFrame(frame);
   } catch (e) {
     $("setup-note").textContent =
-      "De 3D-yard kon niet laden. Vernieuw de pagina.";
+      "The 3D yard could not load. Refresh the page.";
     console.error(e);
     return;
   }
@@ -568,8 +567,8 @@ async function boot() {
     !!import.meta.env.VITE_CONVEX_URL &&
     !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
   $("setup-note").textContent = configured
-    ? "Meld je aan voor je lunchrit."
-    : "Google-aanmelding is nog niet ingesteld.";
+    ? "Sign in for your lunch run."
+    : "Google sign-in is not configured yet.";
   $("preview").hidden = !(
     import.meta.env.DEV || import.meta.env.VITE_ENABLE_PREVIEW === "true"
   );

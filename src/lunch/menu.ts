@@ -2,7 +2,7 @@
  * Screenshots stay intact; the UI crops them with CSS, preserving the actual photos.
  * Frikandel and Kipkorn include one free portion per paid portion.
  */
-export const CATEGORIES = ["Frieten", "Burgers", "Snacks", "Sauzen"] as const;
+export const CATEGORIES = ["Fries", "Burgers", "Snacks", "Sauces"] as const;
 export type Category = (typeof CATEGORIES)[number];
 export type Photo = {
   source: string;
@@ -50,14 +50,14 @@ function products(
   }));
 }
 export const MENU: Product[] = [
-  ...products("Frieten", [
-    ["kleine-puntzak", "Kleine puntzak", 400, fries(464, 76)],
-    ["grote-puntzak", "Grote puntzak", 490, fries(464, 76)],
-    ["familie-puntzak", "Familie puntzak", 600, fries(464, 76)],
-    ["friet-julientje", "Friet Julientje", 1000, fries(1211, 407)],
-    ["friet-rombautje", "Friet Rombautje", 1020, fries(465, 742)],
-    ["bicky-frietje", "Bicky Frietje", 1000, fries(1211, 742, 220, 163)],
-    ["friet-stoverij", "Friet Stoverij", 1000, fries(465, 1077, 220, 161)],
+  ...products("Fries", [
+    ["kleine-puntzak", "Small fries cone", 400, fries(464, 76)],
+    ["grote-puntzak", "Large fries cone", 490, fries(464, 76)],
+    ["familie-puntzak", "Family fries cone", 600, fries(464, 76)],
+    ["friet-julientje", "Julientje fries", 1000, fries(1211, 407)],
+    ["friet-rombautje", "Rombautje fries", 1020, fries(465, 742)],
+    ["bicky-frietje", "Bicky fries", 1000, fries(1211, 742, 220, 163)],
+    ["friet-stoverij", "Beef stew fries", 1000, fries(465, 1077, 220, 161)],
   ]),
   ...products("Burgers", [
     ["bicky-burger", "Bicky burger", 480, burgers(389, 28)],
@@ -73,20 +73,20 @@ export const MENU: Product[] = [
     ],
     ["bicky-rib", "Bicky rib burger", 550, burgers(387, 870)],
     ["fishburger", "Fishburger", 520, burgers(1018, 870)],
-    ["vegiburger", "Vegiburger", 480, burgers(388, 1155)],
-    ["dubbele-bicky", "Dubbele bicky burger", 680, burgers(1018, 1155)],
+    ["vegiburger", "Veggie burger", 480, burgers(388, 1155)],
+    ["dubbele-bicky", "Double Bicky burger", 680, burgers(1018, 1155)],
     [
       "dubbele-chicken",
-      "Dubbele bicky chicken",
+      "Double Bicky chicken",
       760,
       burgers(388, 1436, 180, 133),
     ],
-    ["dubbele-vegi", "Dubbele vegiburger", 680, burgers(1018, 1440)],
+    ["dubbele-vegi", "Double veggie burger", 680, burgers(1018, 1440)],
     ["bicky-orange", "Bicky orange", 700, burgers(388, 1720, 180, 154)],
   ]),
   ...products("Snacks", [
     ["cheese-crack", "Cheese Crack", 320, snack1(400, 32, 193, 132)],
-    ["gehaktbal", "Gehaktbal", 360, snack1(1080, 32, 193, 132)],
+    ["gehaktbal", "Meatball", 360, snack1(1080, 32, 193, 132)],
     ["frikandel", "Frikandel", 310, snack1(400, 291)],
     ["frikandel-special", "Frikandel special", 380, snack1(1080, 291)],
     ["frikandel-xxl", "Frikandel XXL", 550, snack1(400, 625)],
@@ -101,179 +101,179 @@ export const MENU: Product[] = [
     ["kipkorn", "Kipkorn", 400, snack1(400, 1237)],
     [
       "gehaktbal-special",
-      "Gehaktbal special",
+      "Meatball special",
       410,
       snack1(1080, 1237, 193, 145),
     ],
-    ["lookworst", "Lookworst", 420, snack1(400, 1571)],
+    ["lookworst", "Garlic sausage", 420, snack1(400, 1571)],
     [
       "lookworst-special",
-      "Lookworst special",
+      "Garlic sausage special",
       470,
       snack1(1080, 1571, 193, 143),
     ],
-    ["chixfingers", "Chixfingers (6 stuks)", 410, snack2(445, 76)],
-    ["kippets", "Kippets (5 stuks)", 410, snack2(1175, 76)],
+    ["chixfingers", "Chixfingers (6 pieces)", 410, snack2(445, 76)],
+    ["kippets", "Kippets (5 pieces)", 410, snack2(1175, 76)],
     ["sito-gold", "Sito Gold", 420, snack2(445, 405)],
-    ["loempia-kip", "Loempia Kip", 440, snack2(1175, 405, 211, 158)],
+    ["loempia-kip", "Chicken spring roll", 440, snack2(1175, 405, 211, 158)],
     [
       "mini-loempias",
-      "Mini loempia’s met saus (6 stuks)",
+      "Mini spring rolls with sauce (6 pieces)",
       450,
       snack2(445, 734),
     ],
-    ["bamischijf", "Bamischijf", 420, snack2(1175, 734)],
+    ["bamischijf", "Noodle patty", 420, snack2(1175, 734)],
     ["drumsticks", "Drumsticks", 470, snack2(445, 1109)],
-    ["kaaskroket", "Kaaskroket", 330, snack2(1175, 1109)],
-    ["garnaalkroket", "Garnaalkroket", 400, snack2(445, 1437)],
-    ["vleeskroket", "Vleeskroket", 400, snack2(1175, 1437)],
-    ["bitterballen", "Bitterballen (5 stuks)", 380, snack3(423, 60)],
-    ["sate-rund", "Saté rund", 450, snack3(1107, 60)],
-    ["sate-kip", "Saté kip", 450, snack3(423, 368)],
-    ["ardeense-sate", "Ardeense saté", 430, snack3(1107, 368)],
-    ["mozzarellasticks", "Mozzarellasticks (5 stuks)", 410, snack3(423, 677)],
-    ["goulashkroket", "Goulashkroket", 420, snack3(1107, 677)],
+    ["kaaskroket", "Cheese croquette", 330, snack2(1175, 1109)],
+    ["garnaalkroket", "Shrimp croquette", 400, snack2(445, 1437)],
+    ["vleeskroket", "Meat croquette", 400, snack2(1175, 1437)],
+    ["bitterballen", "Bitterballen (5 pieces)", 380, snack3(423, 60)],
+    ["sate-rund", "Beef skewer", 450, snack3(1107, 60)],
+    ["sate-kip", "Chicken skewer", 450, snack3(423, 368)],
+    ["ardeense-sate", "Ardennes skewer", 430, snack3(1107, 368)],
+    ["mozzarellasticks", "Mozzarellasticks (5 pieces)", 410, snack3(423, 677)],
+    ["goulashkroket", "Goulash croquette", 420, snack3(1107, 677)],
     ["zigeunerstick", "Zigeunerstick", 380, snack3(423, 986)],
-    ["zeestick", "Zeestick", 410, snack3(1107, 986)],
-    ["mini-lucifer", "Mini Lucifer (4 stuks)", 430, snack3(423, 1293)],
+    ["zeestick", "Fish stick", 410, snack3(1107, 986)],
+    ["mini-lucifer", "Mini Lucifer (4 pieces)", 430, snack3(423, 1293)],
     ["taco", "Taco", 400, snack3(1107, 1293)],
     [
       "vegi-bitterballen",
-      "Vegetarische bitterballen (5 stuks)",
+      "Vegetarian bitterballen (5 pieces)",
       430,
       snack3(423, 1602),
     ],
-    ["kip-kaaspunt", "Kip Kaaspunt", 440, snack3(1107, 1602)],
+    ["kip-kaaspunt", "Chicken cheese triangle", 440, snack3(1107, 1602)],
   ]),
-  ...products("Sauzen", [
+  ...products("Sauces", [
     [
       "mayonaise",
-      "Mayonaise",
+      "Mayonnaise",
       120,
       photo("sauzen-1", [1432, 1760], [440, 85, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "ketchup",
       "Ketchup",
       120,
       photo("sauzen-1", [1432, 1760], [1100, 85, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "curry-ketchup",
       "Curry ketchup",
       120,
       photo("sauzen-1", [1432, 1760], [440, 383, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "americain",
       "Americain",
       120,
       photo("sauzen-1", [1432, 1760], [1100, 383, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "bearnaise",
       "Bearnaise",
       120,
       photo("sauzen-1", [1432, 1760], [440, 681, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "frietsaus",
-      "Frietsaus",
+      "Fries sauce",
       120,
       photo("sauzen-1", [1432, 1760], [1100, 681, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "tartaar",
-      "Tartaar",
+      "Tartar sauce",
       120,
       photo("sauzen-1", [1432, 1760], [440, 979, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "andalouse",
       "Andalouse",
       120,
       photo("sauzen-1", [1432, 1760], [1100, 979, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "cocktail",
       "Cocktail",
       120,
       photo("sauzen-1", [1432, 1760], [440, 1277, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "samurai",
       "Samurai",
       120,
       photo("sauzen-1", [1432, 1760], [1100, 1277, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "look",
-      "Look",
+      "Garlic sauce",
       120,
       photo("sauzen-1", [1432, 1760], [440, 1575, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "joppie",
       "Joppie",
       120,
       photo("sauzen-1", [1432, 1760], [1100, 1575, 190, 180]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "peper",
-      "Peper",
+      "Pepper sauce",
       120,
       photo("sauzen-2", [1526, 1472], [467, 100, 210, 190]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "pili-pili",
       "Pili-pili",
       120,
       photo("sauzen-2", [1526, 1472], [1210, 100, 210, 190]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "brasil",
       "Brasil",
       120,
       photo("sauzen-2", [1526, 1472], [467, 436, 210, 190]),
-      "Potje",
+      "Portion pot",
     ],
     [
       "mosterd",
-      "Mosterd",
+      "Mustard",
       120,
       photo("sauzen-2", [1526, 1472], [1210, 436, 210, 190]),
-      "Potje",
+      "Portion pot",
     ],
-    ["bicky-ui", "Bicky ui", 120, null, "Potje"],
-    ["verse-ui", "verse ui", 120, null, "Potje"],
-    ["gele-bicky-saus", "Gele Bicky saus", 120, null, "Potje"],
+    ["bicky-ui", "Bicky onions", 120, null, "Portion pot"],
+    ["verse-ui", "Fresh onions", 120, null, "Portion pot"],
+    ["gele-bicky-saus", "Yellow Bicky sauce", 120, null, "Portion pot"],
     [
       "speciaal-curryketchup",
-      "Speciaal Curryketchup",
+      "Special curry ketchup",
       220,
       null,
-      "Mayonaise en curryketchup en verse ui",
+      "Mayonnaise, curry ketchup and fresh onions",
     ],
     [
       "speciaal-tomatenketchup",
-      "Speciaal Tomatenketchup",
+      "Special tomato ketchup",
       220,
       null,
-      "Mayonaise en tomatenketchup en verse ui",
+      "Mayonnaise, tomato ketchup and fresh onions",
     ],
   ]),
 ];
@@ -286,7 +286,7 @@ export type OrderLine = CartItem & {
 export const ORDER_FEE_CENTS = 100;
 export function priceCart(cart: CartItem[]) {
   if (!Array.isArray(cart) || cart.length < 1 || cart.length > MENU.length)
-    throw new Error("Kies minstens één product.");
+    throw new Error("Choose at least one item.");
   const seen = new Set<string>();
   const lines: OrderLine[] = cart.map(({ productId, quantity }) => {
     const product = MENU.find((p) => p.id === productId);
@@ -297,7 +297,7 @@ export function priceCart(cart: CartItem[]) {
       quantity < 1 ||
       quantity > 20
     )
-      throw new Error("Ongeldig product of aantal.");
+      throw new Error("Invalid item or quantity.");
     seen.add(productId);
     return {
       productId,
@@ -308,7 +308,7 @@ export function priceCart(cart: CartItem[]) {
     };
   });
   if (lines.reduce((sum, l) => sum + l.quantity, 0) > 50)
-    throw new Error("Maximaal 50 producten per bestelling.");
+    throw new Error("Maximum 50 paid items per order.");
   const subtotalCents = lines.reduce(
     (sum, l) => sum + l.quantity * l.unitCents,
     0,
@@ -321,6 +321,6 @@ export function priceCart(cart: CartItem[]) {
   };
 }
 export const euro = (cents: number) =>
-  new Intl.NumberFormat("nl-BE", { style: "currency", currency: "EUR" }).format(
+  new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR" }).format(
     cents / 100,
   );

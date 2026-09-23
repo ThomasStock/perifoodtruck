@@ -37,7 +37,7 @@ export async function connect(
   try {
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(
-        () => reject(new Error("Aanmelden duurt te lang. Probeer opnieuw.")),
+        () => reject(new Error("Sign-in timed out. Please try again.")),
         15000,
       );
       client.setAuth(
@@ -47,7 +47,7 @@ export async function connect(
           if (authenticated) resolve();
           else {
             const error = new Error(
-              "Je Google-sessie is verlopen. Meld je opnieuw aan.",
+              "Your Google session expired. Please sign in again.",
             );
             reject(error);
             onError(error);
@@ -134,7 +134,7 @@ export function preview(
       if (name === "leaveKiosk" && p.phase === "kiosk") p.phase = "walk-kiosk";
       if (name === "reserve") {
         if (p.phase !== "kiosk" || distance(p.driver, KIOSK) >= 2.4)
-          throw new Error("Bestel aan de kiosk.");
+          throw new Error("Order at the kiosk.");
         Object.assign(p, priceCart(cart ?? []), {
           parking: chooseParking([], Math.random()),
           phase: "walk-truck",
@@ -169,7 +169,7 @@ export async function googleButton(
   if (!window.google)
     await new Promise<void>((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
+      script.src = "https://accounts.google.com/gsi/client?hl=en";
       script.async = true;
       script.onload = () => resolve();
       script.onerror = () =>
@@ -186,6 +186,7 @@ export async function googleButton(
     auto_select: false,
   });
   window.google!.accounts.id.renderButton(element, {
+    locale: "en",
     theme: "outline",
     size: "large",
     shape: "pill",

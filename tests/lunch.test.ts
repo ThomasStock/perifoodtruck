@@ -51,7 +51,7 @@ async function put(t: Harness, email: string, patch: Partial<Player>) {
   });
 }
 test("menu preserves supplied prices, excludes Friet maison, charges one euro once", () => {
-  assert.equal(MENU.filter((p) => p.category === "Frieten").length, 7);
+  assert.equal(MENU.filter((p) => p.category === "Fries").length, 7);
   assert.equal(MENU.filter((p) => p.category === "Burgers").length, 13);
   assert.equal(MENU.filter((p) => p.category === "Snacks").length, 34);
   assert.equal(
@@ -156,7 +156,7 @@ test("kiosk confirmation reserves only; collection and whole-trailer exit place 
   await alice.mutation(fn("join"), { session: "a" });
   await assert.rejects(
     alice.mutation(fn("reserve"), { session: "a", cart }),
-    /kiosk/,
+    /kiosk/i,
   );
   await put(t, "alice@example.com", {
     phase: "kiosk",
@@ -290,7 +290,7 @@ test("recovery preserves the reserved price; leaving without a trailer cannot pl
   await alice.mutation(fn("join"), { session: "b" });
   await assert.rejects(
     alice.mutation(fn("interact"), { session: "a" }),
-    /tabblad/,
+    /another tab/,
   );
 });
 

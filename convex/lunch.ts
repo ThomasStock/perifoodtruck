@@ -30,13 +30,13 @@ const point = v.object({ x: v.number(), z: v.number() });
 async function identity(ctx: QueryCtx | MutationCtx) {
   const id = await ctx.auth.getUserIdentity();
   if (!id?.email || id.emailVerified !== true)
-    throw new Error("Meld je aan met een geverifieerd Google-account.");
+    throw new Error("Sign in with a verified Google account.");
   if (
     process.env.ALLOWED_EMAIL_DOMAIN &&
     id.email.toLowerCase().split("@")[1] !==
       process.env.ALLOWED_EMAIL_DOMAIN.toLowerCase()
   )
-    throw new Error("Gebruik je bedrijfsaccount.");
+    throw new Error("Use your company account.");
   return { subject: id.tokenIdentifier, email: id.email.toLowerCase() };
 }
 async function player(ctx: QueryCtx | MutationCtx, session?: string) {
@@ -45,11 +45,9 @@ async function player(ctx: QueryCtx | MutationCtx, session?: string) {
     .query("lunchPlayers")
     .withIndex("by_subject", (q) => q.eq("subject", id.subject))
     .unique();
-  if (!p) throw new Error("Meld je eerst aan.");
+  if (!p) throw new Error("Please sign in first.");
   if (session && p.session !== session)
-    throw new Error(
-      "Je truck is actief in een ander tabblad. Meld je hier opnieuw aan.",
-    );
+    throw new Error("Your truck is active in another tab. Sign in here again.");
   return p;
 }
 const publicPlayer = (p: Player): Player => ({
@@ -117,7 +115,7 @@ export const move = mutation({
   args: { session: v.string(), truck: pose, driver: point },
   handler: async (ctx, { session, truck, driver }) => {
     const p = await player(ctx, session);
-    if (!validPose(truck, driver)) throw new Error("Ongeldige positie.");
+    if (!validPose(truck, driver)) throw new Error("Invalid position.");
     const elapsed = Math.min(
       30,
       Math.max(0, (Date.now() - p.updatedAt) / 1000),
@@ -126,9 +124,9 @@ export const move = mutation({
       distance(truck, p.truck) > (walking(p) ? 0.01 : 6 * elapsed + 2) ||
       distance(driver, p.driver) > (walking(p) ? 4 * elapsed + 1 : 0.01)
     )
-      throw new Error("Positie niet gesynchroniseerd. Meld je opnieuw aan.");
+      throw new Error("Position out of sync. Please sign in again.");
     if (p.phase === "kiosk" && distance(driver, p.driver) > 0.01)
-      throw new Error("Sluit de kiosk om verder te lopen.");
+      throw new Error("Close the kiosk to continue walking.");
     const next = { ...p, truck, driver, updatedAt: Date.now() };
     if (exited(next)) {
       // This is the only commit point. Kiosk confirmation merely reserves a trailer.
@@ -180,7 +178,7 @@ export const reserve = mutation({
     )
       return;
     if (p.phase !== "kiosk" || distance(p.driver, KIOSK) >= 2.4)
-      throw new Error("Bestel aan de kiosk.");
+      throw new Error("Order at the kiosk.");
     const priced = priceCart(cart);
     const others = await ctx.db.query("lunchPlayers").collect();
     const occupied = others

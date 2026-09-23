@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { createBurgerSign } from "./burger-sign";
 import { YardScene } from "../scene";
 import { DriverRig } from "../rig";
 import { RigWheels } from "../wheels";
@@ -95,9 +96,11 @@ export class LunchScene {
   private ghost = false;
   private trail: THREE.Line;
   private elapsed = 0;
+  private burgerSign = createBurgerSign();
   constructor(container: HTMLElement) {
     this.base = new YardScene(container, true);
     this.base.mode = "yard";
+    this.base.scene.add(this.burgerSign.root);
     this.trail = new THREE.Line(
       new THREE.BufferGeometry(),
       new THREE.LineDashedMaterial({
@@ -129,11 +132,12 @@ export class LunchScene {
       sign.position.set(x, 4.5, -43);
       this.base.scene.add(sign);
     }
-    const sign = label("UITRIT  →  BESTELLING PLAATSEN", 23);
+    const sign = label("EXIT  →  PLACE ORDER", 23);
     sign.position.set(52, 7, 34);
     this.base.scene.add(sign);
-    const kiosk = label("BESTEL HIER JE LUNCH", 11);
-    kiosk.position.set(-33.7, 5.5, 26);
+    const kiosk = label("ORDER LUNCH HERE", 11);
+    kiosk.position.set(-39, 4.3, 30);
+    kiosk.scale.set(12, 1.5, 1);
     this.base.scene.add(kiosk);
     for (const z of [22, 46]) {
       const post = new THREE.Mesh(
@@ -198,6 +202,7 @@ export class LunchScene {
   }
   render(me: Player | null, players: Player[], input: Input, dt: number) {
     this.elapsed += dt;
+    this.burgerSign.burger.rotation.y = this.elapsed * 0.55;
     const local = me ?? {
       email: "",
       truck: this.state.truck,

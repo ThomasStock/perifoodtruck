@@ -1,5 +1,7 @@
 # The Lunch Yard
 
+The interface, instructions, menu descriptions and sign-in button are English-only. A rotating low-poly hamburger on a pole beside the kiosk building marks the ORDER LUNCH HERE sign. Original branded food names are retained where appropriate.
+
 Entry point: `src/lunch/main.ts`. The game reuses the original yard, truck models, articulated driving physics, walking controls, and camera. `yard-lunch.glb` adds an exit in the east fence. Generate it with Blender: `blender --background --python scripts/build_models.py -- yard-lunch`.
 
 ## Lunch run

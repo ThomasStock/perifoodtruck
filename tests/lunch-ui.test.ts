@@ -82,29 +82,29 @@ test("UI: kiosk totals include one fee, reservation closes kiosk without placing
   assert.equal(doc.querySelectorAll(".product").length, 7);
   assert.doesNotMatch(doc.getElementById("products")!.textContent!, /maison/);
   (doc.querySelector('[data-plus="kleine-puntzak"]') as HTMLElement).click();
-  assert.match(doc.getElementById("cart-totals")!.textContent!, /5,00/);
+  assert.match(doc.getElementById("cart-totals")!.textContent!, /5.00/);
   (doc.querySelector('[data-category="Burgers"]') as HTMLElement).click();
   assert.equal(doc.querySelectorAll(".product").length, 13);
   (doc.querySelector('[data-plus="bicky-burger"]') as HTMLElement).click();
-  assert.match(doc.getElementById("cart-totals")!.textContent!, /9,80/);
-  (doc.querySelector('[data-category="Sauzen"]') as HTMLElement).click();
+  assert.match(doc.getElementById("cart-totals")!.textContent!, /9.80/);
+  (doc.querySelector('[data-category="Sauces"]') as HTMLElement).click();
   assert.equal(doc.querySelectorAll(".product").length, 21);
   (
     doc.querySelector('[data-plus="speciaal-curryketchup"]') as HTMLElement
   ).click();
-  assert.match(doc.getElementById("cart-totals")!.textContent!, /12,00/);
+  assert.match(doc.getElementById("cart-totals")!.textContent!, /12.00/);
   (doc.querySelector('[data-category="Snacks"]') as HTMLElement).click();
   assert.equal(doc.querySelectorAll(".promotion").length, 2);
   (doc.querySelector('[data-plus="frikandel"]') as HTMLElement).click();
   assert.match(
     doc.getElementById("cart-lines")!.textContent!,
-    /1 betaald \+ 1 gratis · 2 stuks/,
+    /1 paid \+ 1 free · 2 pieces/,
   );
-  assert.match(doc.getElementById("cart-totals")!.textContent!, /15,10/);
+  assert.match(doc.getElementById("cart-totals")!.textContent!, /15.10/);
   await run("action('reserve')");
   assert.equal(doc.getElementById("kiosk-dialog")!.hasAttribute("open"), false);
   assert.equal(doc.getElementById("order-count")!.textContent, "0");
-  assert.match(doc.getElementById("receipt-total")!.textContent!, /15,10/);
+  assert.match(doc.getElementById("receipt-total")!.textContent!, /15.10/);
   assert.equal(run("state.me.phase"), "walk-truck");
   assert.match(doc.getElementById("pickup-location")!.textContent!, /L0/);
   dom.window.close();
