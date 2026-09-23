@@ -742,14 +742,15 @@ export function integrate(
   input: Input,
   assisted: boolean,
   dt: number,
+  speedScale = 1,
 ) {
   const throttle = clamp(input.throttle, -1, 1),
     steer = clamp(input.steer, -1, 1);
-  const maxSpeed = input.precision ? 1.35 : 5.5; // 20 km/h site speed
-  const reverseMax = input.precision ? 0.8 : 2.1;
+  const maxSpeed = input.precision ? 1.35 : 5.5 * speedScale; // 20 km/h site speed
+  const reverseMax = input.precision ? 0.8 : 2.1 * speedScale;
   const desired = throttle * (throttle < 0 ? reverseMax : maxSpeed);
   const braking = input.brake || t.speed * throttle < 0;
-  const acceleration = braking ? 6.5 : throttle === 0 ? 3.5 : 2.5;
+  const acceleration = braking ? 6.5 : throttle === 0 ? 3.5 : 2.5 * speedScale;
   t.speed += clamp(
     (input.brake ? 0 : desired) - t.speed,
     -acceleration * dt,

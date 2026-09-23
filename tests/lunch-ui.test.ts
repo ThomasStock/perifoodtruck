@@ -228,3 +228,24 @@ test("UI: rejected saved credentials leave sign-in available and clear the stale
   );
   app.dom.window.close();
 });
+
+test("UI: Space and mobile control stay turbo in both spectator and active driving", async () => {
+  const { dom, run, doc } = await game();
+  await run('state.me.phase = "complete"; paint()');
+  assert.equal(doc.getElementById("space-label")!.textContent, "Turbo");
+  assert.equal(
+    doc.getElementById("brake-turbo")!.getAttribute("aria-label"),
+    "Turbo",
+  );
+  assert.equal(
+    (doc.getElementById("brake-turbo") as HTMLElement).dataset.key,
+    " ",
+  );
+  await run('state.me.phase = "arrive"; paint()');
+  assert.equal(doc.getElementById("space-label")!.textContent, "Turbo");
+  assert.equal(
+    doc.getElementById("brake-turbo")!.getAttribute("aria-label"),
+    "Turbo",
+  );
+  dom.window.close();
+});

@@ -433,3 +433,50 @@ test("existing reservations in retired bays are mapped to a usable new parking",
   await alice.mutation(fn("interact"), { session: "a" });
   assert.equal((await alice.query(world, {})).me.phase, "exit");
 });
+
+test("turbo boosts active drivers and spectators; releasing restores normal speed", () => {
+  for (const phase of ["arrive", "pickup", "exit", "complete"] as const) {
+    const normal = newPlayer("normal@example.com");
+    Object.assign(normal.truck, {
+      x: 0,
+      z: -25,
+      heading: 0,
+      trailerHeading: 0,
+    });
+    normal.phase = phase;
+    const boosted = structuredClone(normal);
+    for (let i = 0; i < 120; i++) {
+      drive(normal, { ...idleInput(), throttle: 1 }, 1 / 60);
+      drive(boosted, { ...idleInput(), throttle: 1, turbo: true }, 1 / 60);
+    }
+    assert.ok(boosted.truck.speed > normal.truck.speed * 2.5, phase);
+    const top = boosted.truck.speed;
+    drive(boosted, { ...idleInput(), throttle: 1 }, 1 / 60);
+    assert.ok(boosted.truck.speed < top, "releasing turbo slows back down");
+    const released = boosted.truck.speed;
+    drive(boosted, { ...idleInput(), brake: true }, 1 / 60);
+    assert.ok(boosted.truck.speed < released, "modal brake remains effective");
+  }
+});
+
+test("multiplayer accepts turbo speed and travel while still rejecting excessive speed", async () => {
+  const { t, alice } = setup();
+  await alice.mutation(fn("join"), { session: "turbo" });
+  const p = (await alice.query(world, {})).me;
+  await put(t, p.email, { updatedAt: Date.now() - 1000 });
+  const truck = { ...p.truck, z: p.truck.z - 16, speed: 16.5 };
+  await alice.mutation(fn("move"), {
+    session: "turbo",
+    truck,
+    driver: p.driver,
+  });
+  assert.equal((await alice.query(world, {})).me.truck.speed, 16.5);
+  await assert.rejects(
+    alice.mutation(fn("move"), {
+      session: "turbo",
+      truck: { ...truck, speed: 30 },
+      driver: p.driver,
+    }),
+    /Invalid position/,
+  );
+});

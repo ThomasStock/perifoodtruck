@@ -122,7 +122,7 @@ export const move = mutation({
       Math.max(0, (Date.now() - p.updatedAt) / 1000),
     );
     if (
-      distance(truck, p.truck) > (walking(p) ? 0.01 : 6 * elapsed + 2) ||
+      distance(truck, p.truck) > (walking(p) ? 0.01 : 17 * elapsed + 2) ||
       distance(driver, p.driver) > (walking(p) ? 4 * elapsed + 1 : 0.01)
     )
       throw new Error("Position out of sync. Please sign in again.");

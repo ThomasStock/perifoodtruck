@@ -7,13 +7,14 @@ import {
   offset,
   overlap,
   rigRects,
-  type Input,
+  type Input as DrivingInput,
   type Point,
   type Rect,
   type Truck,
 } from "../game/simulation";
 import type { OrderLine } from "./menu";
-export type { Truck, Point, Input } from "../game/simulation";
+export type Input = DrivingInput & { turbo?: boolean };
+export type { Truck, Point } from "../game/simulation";
 export const KIOSK = { x: -33.7, z: 28.2 };
 export const PARK = { x: -24, z: 43.5, w: 6, d: 23 };
 export const EXIT = { x: 54, z: 34, halfWidth: 12 };
@@ -161,7 +162,7 @@ export function drive(p: Player, input: Input, dt: number) {
     return;
   }
   const before = { ...p.truck };
-  integrate(p.truck, input, attached(p), dt);
+  integrate(p.truck, input, attached(p), dt, input.turbo ? 3 : 1);
   if (!attached(p)) p.truck.trailerHeading = p.truck.heading;
   const body = pickupBody(p);
   const shapes = rigRects(p.truck).slice(0, attached(p) ? 2 : 1);
@@ -195,7 +196,7 @@ export function validPose(t: Truck, p: Point) {
     t.z <= 80 &&
     Math.abs(t.heading) <= Math.PI + 0.001 &&
     Math.abs(t.trailerHeading) <= Math.PI + 0.001 &&
-    Math.abs(t.speed) <= 5.6 &&
+    Math.abs(t.speed) <= 16.6 &&
     Math.abs(t.steer) <= 0.58 &&
     Math.abs(p.x) <= 51 &&
     p.z >= -43 &&
@@ -279,7 +280,7 @@ export function objective(p: Player): {
       return {
         title: "Your order is placed!",
         detail:
-          "Thanks! Your lunch is on the order list. You can keep driving as a ghost.",
+          "Thanks! Your lunch is on the order list. You can keep driving as a ghost. Hold Space or the mobile Turbo button for a speed boost.",
         target: { x: 68, z: EXIT.z },
         step: 4,
       };
