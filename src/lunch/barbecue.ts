@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { nameTag } from "./name-tag";
 import { DriverRig } from "../rig";
 
 /** A lunch crew on the check-in forecourt, clear of the door and kiosk path. */
@@ -160,6 +161,9 @@ export class Barbecue {
       this.root.add(root);
       this.crew.push({ root, rig, x, z, heading });
       if (i === 0) {
+        const tag = nameTag("Bart from the Yard");
+        tag.position.set(0, 2.8, 0);
+        root.add(tag);
         const arm = root.getObjectByName("arm-right");
         if (arm) {
           const handle = new THREE.Mesh(

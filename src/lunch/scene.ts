@@ -1,3 +1,4 @@
+import { nameTag } from "./name-tag";
 import { RemoteMotion, applyRemoteTruckPose } from "./remote-motion";
 import { Barbecue } from "./barbecue";
 import { BurgerLitter } from "./burger-litter";
@@ -19,60 +20,13 @@ import {
   type Point,
 } from "./model";
 function label(email: string, own = false, others = 0) {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d")!;
-  const at = email.lastIndexOf("@");
-  const title = own ? "Your trailer" : email.slice(0, at > 0 ? at : undefined);
-  const detail = own ? email : at > 0 ? email.slice(at) : "Lunch driver";
-  const suffix = others ? `  ·  +${others} here` : "";
-  ctx.font = "500 24px system-ui";
-  const width = Math.min(
-    540,
-    Math.max(220, ctx.measureText(detail + suffix).width + 58),
+  const name = email.split("@")[0];
+  const suffix = others ? ` · +${others} here` : "";
+  return nameTag(
+    own ? "Your trailer" : name,
+    own ? name + suffix : suffix.trim(),
+    own,
   );
-  ctx.font = "600 30px system-ui";
-  canvas.width = Math.max(
-    width,
-    Math.min(540, ctx.measureText(title).width + 66),
-  );
-  canvas.height = 112;
-  ctx.fillStyle = "rgba(255,255,255,0.94)";
-  ctx.strokeStyle = own ? "#80c6b6" : "#d5dfda";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.roundRect(2, 2, canvas.width - 4, 96, 20);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = own ? "#009b80" : "#849c94";
-  ctx.beginPath();
-  ctx.arc(25, 34, 5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#21483f";
-  ctx.font = "600 30px system-ui";
-  ctx.textBaseline = "middle";
-  ctx.fillText(title, 42, 34, canvas.width - 62);
-  ctx.fillStyle = "#698177";
-  ctx.font = "500 24px system-ui";
-  ctx.fillText(detail + suffix, 22, 72, canvas.width - 44);
-  // A small pointer anchors the tag to its vehicle, without a floating bar.
-  ctx.fillStyle = own ? "#80c6b6" : "#d5dfda";
-  ctx.beginPath();
-  ctx.moveTo(canvas.width / 2 - 6, 100);
-  ctx.lineTo(canvas.width / 2, 108);
-  ctx.lineTo(canvas.width / 2 + 6, 100);
-  ctx.fill();
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  const sprite = new THREE.Sprite(
-    new THREE.SpriteMaterial({
-      map: texture,
-      depthTest: false,
-      depthWrite: false,
-      transparent: true,
-    }),
-  );
-  sprite.scale.set(canvas.width / 110, canvas.height / 110, 1);
-  return sprite;
 }
 function tint(root: THREE.Object3D, opacity: number) {
   root.traverse((o) => {
