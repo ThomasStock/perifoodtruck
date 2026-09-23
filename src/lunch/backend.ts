@@ -90,6 +90,7 @@ export async function connect(
 export function preview(
   onChange: (s: Snapshot) => void,
   kioskFixture = false,
+  spectatorFixture = false,
 ): Backend {
   let state: Snapshot = {
     me: newPlayer("you@preview.local"),
@@ -108,13 +109,22 @@ export function preview(
     state.me.driver = { ...KIOSK };
     state.me.truck.z = 43;
   }
+  if (spectatorFixture) {
+    state = {
+      me: newPlayer("spectator@preview.local"),
+      players: [],
+      orders: [],
+    };
+    state.me.phase = "complete";
+  }
   state.me.parking = normalizeParking(state.me.parking);
   const publish = () => {
     try {
-      localStorage.setItem(
-        "lunch-kiosk-preview",
-        JSON.stringify({ version: 1, state }),
-      );
+      if (!spectatorFixture)
+        localStorage.setItem(
+          "lunch-kiosk-preview",
+          JSON.stringify({ version: 1, state }),
+        );
     } catch {}
     onChange(structuredClone(state));
   };
@@ -139,6 +149,7 @@ export function preview(
       }
     },
     async action(name, cart) {
+      if (spectatorFixture && name !== "recover") return;
       const p = state.me;
       if (name === "interact") interact(p);
       if (name === "recover") recover(p);

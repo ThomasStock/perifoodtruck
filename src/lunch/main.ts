@@ -111,7 +111,8 @@ function receive(next: Snapshot) {
   $("connection").textContent = previewMode ? "● Local preview" : "● Live yard";
   paint();
 }
-async function start(token?: string) {
+let spectatorHold: number | null = null;
+async function start(token?: string, spectator = false) {
   if (!loaded || busy) return;
   busy = true;
   $("setup-note").textContent = "Signing in…";
@@ -132,6 +133,7 @@ async function start(token?: string) {
           import.meta.env.DEV &&
             new URLSearchParams(window.location.search).get("preview") ===
               "kiosk",
+          spectator,
         );
     try {
       cart = JSON.parse(
@@ -145,6 +147,10 @@ async function start(token?: string) {
     $("login").hidden = true;
     for (const id of ["mission", "receipt", "controls", "player-menu"])
       $(id).hidden = false;
+    if (spectator) {
+      $("mission").hidden = true;
+      $("receipt").hidden = true;
+    }
     scene.mode = "follow";
     paint();
     if ($<HTMLDialogElement>("kiosk-dialog").open) renderMenu();
@@ -523,6 +529,11 @@ const key = (e: KeyboardEvent) =>
   ({ ArrowUp: "w", ArrowDown: "s", ArrowLeft: "a", ArrowRight: "d" })[e.key] ??
   e.key.toLowerCase();
 window.addEventListener("keydown", (e) => {
+  if (!state && key(e) === "c") {
+    e.preventDefault();
+    if (!e.repeat && spectatorHold === null) spectatorHold = performance.now();
+    return;
+  }
   if (!state || document.querySelector("dialog[open]")) return;
   const k = key(e);
   if (["w", "a", "s", "d", " ", "shift", "e", "c", "r"].includes(k))
@@ -532,12 +543,17 @@ window.addEventListener("keydown", (e) => {
   if (!e.repeat && k === "r") void burgerAction();
   if (!e.repeat && k === "c") $("camera").click();
 });
-window.addEventListener("keyup", (e) => keys.delete(key(e)));
+window.addEventListener("keyup", (e) => {
+  keys.delete(key(e));
+  if (key(e) === "c") spectatorHold = null;
+});
 window.addEventListener("blur", () => {
+  spectatorHold = null;
   keys.clear();
   joystick.reset();
 });
 document.addEventListener("visibilitychange", () => {
+  spectatorHold = null;
   keys.clear();
   joystick.reset();
 });
@@ -555,6 +571,16 @@ document.querySelectorAll<HTMLElement>("[data-key]").forEach((b) => {
 let last = performance.now(),
   accumulator = 0;
 function frame(now: number) {
+  if (
+    !state &&
+    spectatorHold !== null &&
+    now - spectatorHold >= 1000 &&
+    loaded &&
+    !busy
+  ) {
+    spectatorHold = null;
+    void start(undefined, true);
+  }
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   const input: import("./model").Input = idleInput();

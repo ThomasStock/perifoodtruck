@@ -65,6 +65,7 @@ async function game(auth?: {
             mode = "yard";
             async load() {}
             render() {}
+            setBurgers() {}
             project() {
               return { visible: false, x: 0, y: 0 };
             }
@@ -247,5 +248,40 @@ test("UI: Space and mobile control stay turbo in both spectator and active drivi
     doc.getElementById("brake-turbo")!.getAttribute("aria-label"),
     "Turbo",
   );
+  dom.window.close();
+});
+
+test("hidden C hold starts an isolated spectator without Google or preview persistence", async () => {
+  const { dom, run, doc } = await game({});
+  await run(
+    'window.dispatchEvent(new window.KeyboardEvent("keydown", { key: "c" })); frame(performance.now() + 500)',
+  );
+  assert.equal(
+    doc.getElementById("login")!.hidden,
+    false,
+    "short press stays on login",
+  );
+  await run(
+    'window.dispatchEvent(new window.KeyboardEvent("keyup", { key: "c" })); frame(performance.now() + 1500)',
+  );
+  assert.equal(
+    doc.getElementById("login")!.hidden,
+    false,
+    "releasing cancels the hold",
+  );
+  await run(
+    'window.dispatchEvent(new window.KeyboardEvent("keydown", { key: "c" })); frame(performance.now() + 1100)',
+  );
+  await new Promise<void>((resolve) => setImmediate(resolve));
+  assert.equal(doc.getElementById("login")!.hidden, true);
+  assert.equal(await run("state.me.phase"), "complete");
+  assert.equal(doc.getElementById("receipt")!.hidden, true);
+  assert.equal(dom.window.localStorage.getItem("lunch-kiosk-preview"), null);
+  assert.equal(
+    dom.window.localStorage.getItem("lunch-google-credential"),
+    null,
+  );
+  await run("signout()");
+  assert.equal(dom.window.localStorage.getItem("lunch-kiosk-preview"), null);
   dom.window.close();
 });
