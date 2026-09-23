@@ -1330,3 +1330,17 @@ dialog ol {
   border: 0;
   white-space: nowrap;
 }
+
+.turbo-icon {
+  display: inline-block;
+  vertical-align: middle;
+  color: #008e78;
+  background: none;
+  flex-shrink: 0;
+}
+#burger-controls [data-key] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
