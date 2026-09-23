@@ -1086,9 +1086,17 @@ dialog ol {
 }
 .cancel-actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 12px;
   margin-top: 24px;
+}
+#confirm-cancel {
+  background: #c93636;
+  border-color: #c93636;
+}
+#confirm-cancel:hover {
+  background: #ac2929;
+  border-color: #ac2929;
 }
 #cancel-dialog {
   max-width: 480px;
