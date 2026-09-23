@@ -1,6 +1,6 @@
 # The Lunch Yard
 
-The interface, instructions, menu descriptions and sign-in button are English-only. A rotating low-poly hamburger on a pole beside the kiosk building marks the kiosk building. Ground arrows and the original pulsing destination marker guide the current objective; floating yard signs are removed. Original branded food names are retained where appropriate.
+The app interface, instructions and sign-in button are English-only. Menu item names and descriptions preserve the original supplied Dutch menu. A rotating low-poly hamburger on a pole beside the kiosk building marks the kiosk building. Ground arrows and the original pulsing destination marker guide the current objective; floating yard signs are removed. Original branded food names are retained where appropriate.
 
 Entry point: `src/lunch/main.ts`. The game reuses the original yard, truck models, articulated driving physics, walking controls, and camera. `yard-lunch.glb` adds an exit in the east fence. Generate it with Blender: `blender --background --python scripts/build_models.py -- yard-lunch`.
 
