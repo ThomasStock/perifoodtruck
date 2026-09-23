@@ -504,3 +504,80 @@ test("hitching accepts a broad stopped approach without allowing ramming or remo
   p.truck.x = PARKINGS[0].x + 7;
   assert.equal(pickupReady(p), false, "must still be near own trailer");
 });
+
+test("shared burgers require walking, reach all players, and cleanup removes only the nearest landed burger", async () => {
+  const { t, alice } = setup();
+  const bob = t.withIdentity({
+    subject: "bob",
+    email: "bob@example.com",
+    emailVerified: true,
+  });
+  await assert.rejects(
+    t.mutation(fn("throwBurger"), { session: "a", target: { x: 0, z: 0 } }),
+  );
+  await alice.mutation(fn("join"), { session: "a" });
+  await bob.mutation(fn("join"), { session: "b" });
+  await assert.rejects(
+    alice.mutation(fn("throwBurger"), { session: "a", target: { x: 0, z: 0 } }),
+    /Get out/,
+  );
+  await put(t, "alice@example.com", {
+    phase: "walk-kiosk",
+    driver: { x: 0, z: 0 },
+  });
+  await alice.mutation(fn("throwBurger"), {
+    session: "a",
+    target: { x: 4, z: 0 },
+  });
+  await alice.mutation(fn("throwBurger"), {
+    session: "a",
+    target: { x: 5, z: 0 },
+  });
+  let shared = (await bob.query(world, {})).burgers!;
+  assert.equal(shared.length, 1, "rapid repeat throws are limited");
+  assert.equal(shared[0].x, 4);
+  await put(t, "bob@example.com", {
+    phase: "walk-kiosk",
+    driver: { x: 3, z: 0 },
+  });
+  await bob.mutation(fn("cleanBurger"), { session: "b" });
+  assert.equal(
+    (await bob.query(world, {})).burgers!.length,
+    1,
+    "cannot clean a burger in flight",
+  );
+  await t.run(async (ctx) => {
+    for (const b of await ctx.db.query("lunchBurgers").collect())
+      await ctx.db.patch(b._id, { thrownAt: Date.now() - 2000 });
+  });
+  await alice.mutation(fn("throwBurger"), {
+    session: "a",
+    target: { x: 1, z: 0 },
+  });
+  await t.run(async (ctx) => {
+    for (const b of await ctx.db.query("lunchBurgers").collect())
+      await ctx.db.patch(b._id, { thrownAt: Date.now() - 2000 });
+  });
+  await bob.mutation(fn("cleanBurger"), { session: "b" });
+  shared = (await alice.query(world, {})).burgers!;
+  assert.equal(shared.length, 1);
+  assert.equal(
+    shared[0].x,
+    1,
+    "Bob cleans Alice's nearest burger, not the farther one",
+  );
+  await put(t, "bob@example.com", { driver: { x: 20, z: 0 } });
+  await bob.mutation(fn("cleanBurger"), { session: "b" });
+  assert.equal(
+    (await alice.query(world, {})).burgers!.length,
+    1,
+    "cleanup is local",
+  );
+  await assert.rejects(
+    alice.mutation(fn("throwBurger"), {
+      session: "stale",
+      target: { x: 2, z: 0 },
+    }),
+    /another tab/,
+  );
+});

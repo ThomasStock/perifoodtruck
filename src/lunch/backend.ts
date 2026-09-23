@@ -1,3 +1,4 @@
+import { burgerLanding, canThrow, closestBurger } from "./burgers";
 import { ConvexClient } from "convex/browser";
 import { makeFunctionReference } from "convex/server";
 import {
@@ -20,6 +21,8 @@ export interface Backend {
     name: "interact" | "leaveKiosk" | "reserve" | "recover" | "cancelOrder",
     cart?: CartItem[],
   ): Promise<void>;
+  throwBurger(target: Point): Promise<void>;
+  cleanBurger(): Promise<void>;
   close(): void;
 }
 const world = makeFunctionReference<"query", Record<string, never>, Snapshot>(
@@ -67,6 +70,12 @@ export async function connect(
           session,
           ...(name === "reserve" ? { cart } : {}),
         });
+      },
+      async throwBurger(target) {
+        await client.mutation(mutation("throwBurger"), { session, target });
+      },
+      async cleanBurger() {
+        await client.mutation(mutation("cleanBurger"), { session });
       },
       close() {
         off();
@@ -146,6 +155,28 @@ export function preview(
           phase: "walk-truck",
         });
       }
+      publish();
+    },
+    async throwBurger(target) {
+      if (!canThrow(state.me)) return;
+      const burgers = (state.burgers ??= []);
+      if (
+        burgers.length >= 100 ||
+        burgers.some((b) => Date.now() - b.thrownAt < 800)
+      )
+        return;
+      burgers.push({
+        id: crypto.randomUUID(),
+        ...burgerLanding(state.me.driver, target),
+        from: { ...state.me.driver },
+        thrownAt: Date.now(),
+      });
+      publish();
+    },
+    async cleanBurger() {
+      if (!canThrow(state.me)) return;
+      const b = closestBurger(state.me.driver, state.burgers ?? []);
+      state.burgers = (state.burgers ?? []).filter((item) => item.id !== b?.id);
       publish();
     },
     close() {

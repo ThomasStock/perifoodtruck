@@ -2,6 +2,7 @@ import "@fontsource/montserrat/500.css";
 import "@fontsource/montserrat/600.css";
 import "@fontsource/montserrat/700.css";
 import "./style.css";
+import { canThrow, closestBurger } from "./burgers";
 import { LunchScene } from "./scene";
 import { connect, preview, googleButton, type Backend } from "./backend";
 import {
@@ -53,7 +54,7 @@ $("app").innerHTML = `<div id="world"></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
 <footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Drive & walk</span><span><kbd>SPACE</kbd> <span id="space-label">Turbo</span></span><span><kbd>SHIFT</kbd> Precision</span><button id="recover">Recover truck</button><button id="signout">Sign out</button></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
 <div id="touch" hidden><div><button data-key="a" aria-label="Left">←</button><button data-key="d" aria-label="Right">→</button></div><div><button data-key="s" aria-label="Reverse">↓</button><button data-key="w" aria-label="Forward">↑</button><button id="brake-turbo" data-key=" " aria-label="Turbo" title="Hold for turbo">⚡</button></div></div>
-<div id="walk-joystick" class="walking-joystick" aria-label="Walk" hidden><span class="joystick-knob"></span></div>
+<div id="burger-controls" hidden><button id="throw-burger">Throw burger</button><button id="clean-burger" hidden>Clean up <kbd>R</kbd></button><small>Mouse to aim · Click to throw</small></div><div id="walk-joystick" class="walking-joystick" aria-label="Walk" hidden><span class="joystick-knob"></span></div>
 <dialog id="kiosk-dialog"><div class="kiosk-header"><div><div class="eyebrow">PERIPASS · LUNCH KIOSK</div><h2>What are you craving?</h2></div><button id="close-kiosk" aria-label="Close kiosk">×</button></div><div class="kiosk-layout"><section class="menu"><nav aria-label="Menu categories">${CATEGORIES.map((c) => `<button data-category="${c}" class="category">${c}</button>`).join("")}</nav><div id="products"></div></section><aside class="checkout"><div class="eyebrow">YOUR ORDER</div><h3>Good food ahead.</h3><div id="cart-lines"></div><div id="cart-totals"></div><p id="cart-error" role="alert"></p><button id="reserve" class="primary" disabled>Confirm & collect trailer ↗</button><small>Your order is only placed when you drive your trailer out of the yard.</small></aside></div></dialog>
 <dialog id="lunch-details"><div class="dialog-heading"><h2>Your lunch</h2><button data-close="lunch-details" aria-label="Close lunch details">×</button></div><div id="lunch-details-content"></div><button id="details-cancel" class="cancel-order">Cancel order</button></dialog><dialog id="cancel-dialog"><div class="dialog-heading"><h2>Cancel your order?</h2></div><p>Your lunch will be removed from the order list and your trailer released. You will return to the starting point and can order again.</p><div class="cancel-actions"><button id="confirm-cancel" class="primary">Yes, cancel order</button><button data-close="cancel-dialog">Keep my order</button></div></dialog>
 <dialog id="orders-dialog"><div class="dialog-heading"><div><div class="eyebrow">LUNCH TOGETHER</div><h2>Placed orders</h2></div><button data-close="orders-dialog" aria-label="Close orders">×</button></div><p class="muted">Only trailers that have left the yard count as placed orders.</p><div id="orders-content"></div></dialog>
@@ -221,6 +222,7 @@ function signout(explicit = true) {
     "map-button",
     "controls",
     "touch",
+    "burger-controls",
     "walk-joystick",
     "action-wrap",
     "target-label",
@@ -350,6 +352,9 @@ function paint() {
   $("action-text").textContent = prompt;
   $<HTMLButtonElement>("action").disabled = busy;
   const walk = walking(p);
+  $("burger-controls").hidden = !canThrow(p);
+  $("world").classList.toggle("burger-aim", canThrow(p));
+  $("clean-burger").hidden = !closestBurger(p.driver, state.burgers ?? []);
   $("touch").hidden = walk;
   $("walk-joystick").hidden = !walk || p.phase === "kiosk";
   $("speed").textContent = String(Math.round(Math.abs(p.truck.speed) * 3.6));
@@ -451,6 +456,47 @@ function drawMap() {
     c.stroke();
   }
 }
+let burgerBusy = false;
+let throwDirection = { x: 0, z: -1 };
+async function burgerAction(target?: { x: number; z: number }) {
+  if (
+    !state ||
+    !backend ||
+    !canThrow(state.me) ||
+    burgerBusy ||
+    document.querySelector("dialog[open]")
+  )
+    return;
+  burgerBusy = true;
+  try {
+    await flush();
+    if (target) await backend.throwBurger(target);
+    else await backend.cleanBurger();
+  } catch (e) {
+    toast(message(e));
+  } finally {
+    burgerBusy = false;
+  }
+}
+$("throw-burger").onclick = () => {
+  if (state)
+    void burgerAction({
+      x: state.me.driver.x + throwDirection.x * 7,
+      z: state.me.driver.z + throwDirection.z * 7,
+    });
+};
+$("clean-burger").onclick = () => void burgerAction();
+$("world").addEventListener("pointerdown", (event) => {
+  if (
+    event.pointerType !== "mouse" ||
+    event.button !== 0 ||
+    !state ||
+    !canThrow(state.me)
+  )
+    return;
+  const target = scene.aimAt(event.clientX, event.clientY);
+  if (target) void burgerAction(target);
+});
 $("preview").onclick = () => void start();
 $("signout").onclick = () => signout();
 $("action").onclick = () => void action("interact");
@@ -515,10 +561,11 @@ const key = (e: KeyboardEvent) =>
 window.addEventListener("keydown", (e) => {
   if (!state || document.querySelector("dialog[open]")) return;
   const k = key(e);
-  if (["w", "a", "s", "d", " ", "shift", "e", "c"].includes(k))
+  if (["w", "a", "s", "d", " ", "shift", "e", "c", "r"].includes(k))
     e.preventDefault();
   keys.add(k);
   if (!e.repeat && k === "e" && interaction(state.me)) void action("interact");
+  if (!e.repeat && k === "r") void burgerAction();
   if (!e.repeat && k === "c") $("camera").click();
 });
 window.addEventListener("keyup", (e) => keys.delete(key(e)));
@@ -565,6 +612,12 @@ function frame(now: number) {
         input.walkX = x * 0.81 + z * 0.59;
         input.walkZ = -x * 0.59 + z * 0.81;
       }
+      const directionLength = Math.hypot(input.walkX, input.walkZ);
+      if (walking(state.me) && directionLength > 0.1)
+        throwDirection = {
+          x: input.walkX / directionLength,
+          z: input.walkZ / directionLength,
+        };
     } else input.brake = true;
     accumulator += dt;
     while (accumulator >= 1 / 60) {
@@ -587,6 +640,7 @@ function frame(now: number) {
       lastPaint = now;
     }
   }
+  scene.setBurgers(state?.burgers ?? []);
   scene.render(state?.me ?? null, state?.players ?? [], input, dt);
   requestAnimationFrame(frame);
 }

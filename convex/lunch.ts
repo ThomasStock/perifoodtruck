@@ -18,6 +18,7 @@ import {
   type Player,
 } from "../src/lunch/model";
 import { priceCart } from "../src/lunch/menu";
+import { burgerLanding, canThrow, closestBurger } from "../src/lunch/burgers";
 import { distance } from "../src/game/simulation";
 export const pose = v.object({
   x: v.number(),
@@ -92,6 +93,9 @@ export const world = query({
     const me = await player(ctx);
     return {
       me: publicPlayer(me),
+      burgers: (await ctx.db.query("lunchBurgers").collect()).map(
+        ({ _id, x, z, from, thrownAt }) => ({ id: _id, x, z, from, thrownAt }),
+      ),
       players: (await ctx.db.query("lunchPlayers").collect()).map((p) => ({
         ...publicPlayer(p),
         lines: [],
@@ -211,5 +215,44 @@ export const cancelOrder = mutation({
     if (!order && !p.lines.length) return;
     if (order) await ctx.db.delete(order._id);
     await ctx.db.patch(p._id, publicPlayer(newPlayer(p.email)));
+  },
+});
+
+export const throwBurger = mutation({
+  args: { session: v.string(), target: point },
+  handler: async (ctx, { session, target }) => {
+    const p = await player(ctx, session);
+    if (!canThrow(p))
+      throw new Error("Get out of your truck to throw burgers.");
+    const latest = await ctx.db
+      .query("lunchBurgers")
+      .withIndex("by_subject", (q) => q.eq("subject", p.subject))
+      .order("desc")
+      .first();
+    if (latest && Date.now() - latest.thrownAt < 800) return;
+    const burgers = await ctx.db.query("lunchBurgers").collect();
+    if (burgers.length >= 100)
+      throw new Error("The yard is full of burgers. Clean some up first!");
+    const landing = burgerLanding(p.driver, target);
+    await ctx.db.insert("lunchBurgers", {
+      subject: p.subject,
+      ...landing,
+      from: p.driver,
+      thrownAt: Date.now(),
+    });
+  },
+});
+export const cleanBurger = mutation({
+  args: { session: v.string() },
+  handler: async (ctx, { session }) => {
+    const p = await player(ctx, session);
+    if (!canThrow(p)) throw new Error("Get out of your truck to clean up.");
+    const burgers = await ctx.db.query("lunchBurgers").collect();
+    const closest = closestBurger(
+      p.driver,
+      burgers.map((b) => ({ ...b, id: b._id })),
+    );
+    const target = burgers.find((b) => b._id === closest?.id);
+    if (target) await ctx.db.delete(target._id);
   },
 });

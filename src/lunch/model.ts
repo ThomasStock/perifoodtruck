@@ -56,7 +56,12 @@ export type Order = {
   totalCents: number;
   placedAt: number;
 };
-export type Snapshot = { me: Player; players: Player[]; orders: Order[] };
+export type Snapshot = {
+  burgers?: import("./burgers").Burger[];
+  me: Player;
+  players: Player[];
+  orders: Order[];
+};
 export const spawn = (): Truck => ({
   x: -24,
   z: 62,

@@ -17,6 +17,13 @@ const truckPose = v.object({
   steer: v.number(),
 });
 export default defineSchema({
+  lunchBurgers: defineTable({
+    subject: v.string(),
+    x: v.number(),
+    z: v.number(),
+    from: v.object({ x: v.number(), z: v.number() }),
+    thrownAt: v.number(),
+  }).index("by_subject", ["subject", "thrownAt"]),
   lunchPlayers: defineTable({
     subject: v.string(),
     email: v.string(),

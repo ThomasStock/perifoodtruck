@@ -1236,3 +1236,52 @@ dialog ol {
   display: block;
   flex-shrink: 0;
 }
+
+#burger-controls {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#burger-controls button {
+  padding: 12px 16px;
+  font-size: 12px;
+  background: #fff;
+  box-shadow: 0 5px 18px #153e3915;
+}
+#burger-controls small {
+  font-size: 10px;
+  color: #21483f;
+  background: #ffffffda;
+  padding: 8px 12px;
+  border-radius: 16px;
+}
+#throw-burger {
+  color: #008e78;
+  font-weight: 700;
+}
+@media (max-width: 760px), (pointer: coarse) {
+  #burger-controls {
+    bottom: 85px;
+    right: 12px;
+    left: auto;
+    transform: none;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #burger-controls small,
+  #burger-controls kbd {
+    display: none;
+  }
+  #burger-controls button {
+    min-height: 44px;
+    font-size: 11px;
+  }
+}
+
+#world.burger-aim canvas {
+  cursor: crosshair;
+}

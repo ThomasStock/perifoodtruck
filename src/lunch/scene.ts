@@ -1,3 +1,5 @@
+import { BurgerLitter } from "./burger-litter";
+import type { Burger } from "./burgers";
 import * as THREE from "three";
 import { createBurgerSign } from "./burger-sign";
 import { YardScene } from "../scene";
@@ -127,8 +129,29 @@ export class LunchScene {
   private elapsed = 0;
   private arrows: THREE.InstancedMesh;
   private burgerSign = createBurgerSign();
+  private burgerLitter = new BurgerLitter();
+  setBurgers(burgers: Burger[]) {
+    this.burgerLitter.update(burgers);
+  }
+  aimAt(clientX: number, clientY: number): Point | null {
+    const rect = this.base.renderer.domElement.getBoundingClientRect();
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(
+      new THREE.Vector2(
+        ((clientX - rect.left) / rect.width) * 2 - 1,
+        (-(clientY - rect.top) / rect.height) * 2 + 1,
+      ),
+      this.base.camera,
+    );
+    const hit = ray.ray.intersectPlane(
+      new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
+      new THREE.Vector3(),
+    );
+    return hit ? { x: hit.x, z: hit.z } : null;
+  }
   constructor(container: HTMLElement) {
     this.base = new YardScene(container, true);
+    this.base.scene.add(this.burgerLitter.root);
     this.base.mode = "yard";
     this.base.scene.add(this.burgerSign.root);
     const arrow = new THREE.Shape();
