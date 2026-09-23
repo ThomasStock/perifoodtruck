@@ -1077,3 +1077,22 @@ dialog ol {
     black 23px
   );
 }
+
+.cancel-order {
+  margin-top: 12px;
+  width: 100%;
+  color: #954a3d;
+  border: 1px solid #ddc9c3;
+}
+.cancel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+#cancel-dialog {
+  max-width: 480px;
+}
+#cancel-dialog p {
+  line-height: 1.6;
+}

@@ -107,6 +107,31 @@ test("UI: kiosk totals include one fee, reservation closes kiosk without placing
   assert.match(doc.getElementById("receipt-total")!.textContent!, /15.10/);
   assert.equal(run("state.me.phase"), "walk-truck");
   assert.match(doc.getElementById("pickup-location")!.textContent!, /L0/);
+  (doc.getElementById("cancel-order") as HTMLElement).click();
+  assert.equal(doc.getElementById("cancel-dialog")!.hasAttribute("open"), true);
+  assert.equal(
+    run("state.me.phase"),
+    "walk-truck",
+    "opening confirmation does not cancel",
+  );
+  (doc.querySelector('[data-close="cancel-dialog"]') as HTMLElement).click();
+  assert.equal(
+    doc.getElementById("cancel-dialog")!.hasAttribute("open"),
+    false,
+  );
+  assert.equal(run("state.me.lines.length"), 4);
+  (doc.getElementById("cancel-order") as HTMLElement).click();
+  await run("action('cancelOrder')");
+  assert.equal(
+    doc.getElementById("cancel-dialog")!.hasAttribute("open"),
+    false,
+  );
+  assert.equal(run("state.me.phase"), "arrive");
+  assert.equal(run("state.me.lines.length"), 0);
+  assert.equal(
+    (doc.getElementById("cancel-order") as HTMLElement).hidden,
+    true,
+  );
   dom.window.close();
   delete (globalThis as { localStorage?: unknown }).localStorage;
 });

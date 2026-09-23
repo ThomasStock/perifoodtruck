@@ -366,3 +366,45 @@ test("pickup accepts an angled reverse approach but rejects forward ramming and 
     "own trailer blocks reversing through its body",
   );
 });
+
+test("cancellation removes only the caller's placed order, resets the run and is retry-safe", async () => {
+  const { t, alice } = setup();
+  await assert.rejects(t.mutation(fn("cancelOrder"), { session: "a" }));
+  const bob = t.withIdentity({
+    subject: "bob",
+    email: "bob@example.com",
+    emailVerified: true,
+  });
+  for (const [user, email, session] of [
+    [alice, "alice@example.com", "a"],
+    [bob, "bob@example.com", "b"],
+  ] as const) {
+    await user.mutation(fn("join"), { session });
+    await put(t, email, { phase: "kiosk", driver: KIOSK });
+    await user.mutation(fn("reserve"), { session, cart });
+    const truck = {
+      ...spawn(),
+      x: 68,
+      z: 34,
+      heading: Math.PI / 2,
+      trailerHeading: Math.PI / 2,
+    };
+    await put(t, email, { phase: "exit", truck });
+    await user.mutation(fn("move"), { session, truck, driver: KIOSK });
+  }
+  await assert.rejects(alice.mutation(fn("cancelOrder"), { session: "wrong" }));
+  await alice.mutation(fn("cancelOrder"), { session: "a" });
+  await alice.mutation(fn("cancelOrder"), { session: "a" });
+  const state = await alice.query(world, {});
+  assert.deepEqual(
+    state.orders.map((o) => o.email),
+    ["bob@example.com"],
+  );
+  assert.equal(state.me.phase, "arrive");
+  assert.equal(state.me.parking, null);
+  assert.equal(state.me.totalCents, 0);
+  assert.deepEqual(state.me.lines, []);
+  await put(t, "alice@example.com", { phase: "kiosk", driver: KIOSK });
+  await alice.mutation(fn("reserve"), { session: "a", cart });
+  assert.equal((await alice.query(world, {})).me.phase, "walk-truck");
+});

@@ -16,7 +16,7 @@ import { distance } from "../game/simulation";
 export interface Backend {
   move(truck: Truck, driver: Point): Promise<void>;
   action(
-    name: "interact" | "leaveKiosk" | "reserve" | "recover",
+    name: "interact" | "leaveKiosk" | "reserve" | "recover" | "cancelOrder",
     cart?: CartItem[],
   ): Promise<void>;
   close(): void;
@@ -131,6 +131,10 @@ export function preview(
       const p = state.me;
       if (name === "interact") interact(p);
       if (name === "recover") recover(p);
+      if (name === "cancelOrder") {
+        state.orders = state.orders.filter((o) => o.email !== p.email);
+        state.me = newPlayer(p.email);
+      }
       if (name === "leaveKiosk" && p.phase === "kiosk") p.phase = "walk-kiosk";
       if (name === "reserve") {
         if (p.phase !== "kiosk" || distance(p.driver, KIOSK) >= 2.4)

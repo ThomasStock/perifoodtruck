@@ -198,3 +198,17 @@ export const recover = mutation({
     await ctx.db.patch(p._id, publicPlayer(p));
   },
 });
+
+export const cancelOrder = mutation({
+  args: { session: v.string() },
+  handler: async (ctx, { session }) => {
+    const p = await player(ctx, session);
+    const order = await ctx.db
+      .query("lunchOrders")
+      .withIndex("by_subject", (q) => q.eq("subject", p.subject))
+      .unique();
+    if (!order && !p.lines.length) return;
+    if (order) await ctx.db.delete(order._id);
+    await ctx.db.patch(p._id, publicPlayer(newPlayer(p.email)));
+  },
+});
