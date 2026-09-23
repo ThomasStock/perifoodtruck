@@ -1051,11 +1051,16 @@ dialog ol {
   gap: 12px;
   margin-top: 24px;
 }
+#cancel-order,
+#details-cancel,
 #confirm-cancel,
 #confirm-reset {
+  color: #fff;
   background: #c93636;
   border-color: #c93636;
 }
+#cancel-order:hover,
+#details-cancel:hover,
 #confirm-cancel:hover,
 #confirm-reset:hover {
   background: #ac2929;
