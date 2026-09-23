@@ -283,7 +283,7 @@ export type OrderLine = CartItem & {
   unitCents: number;
   freeQuantity?: number;
 };
-export const ORDER_FEE_CENTS = 100;
+export const ORDER_FEE_CENTS = 150;
 export function priceCart(cart: CartItem[]) {
   if (!Array.isArray(cart) || cart.length < 1 || cart.length > MENU.length)
     throw new Error("Choose at least one item.");

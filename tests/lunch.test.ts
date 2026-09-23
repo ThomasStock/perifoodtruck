@@ -59,10 +59,10 @@ test("menu preserves supplied prices, excludes Friet maison, charges one euro on
     false,
   );
   assert.equal(new Set(MENU.map((p) => p.id)).size, MENU.length);
-  assert.equal(priceCart(cart).totalCents, 980);
+  assert.equal(priceCart(cart).totalCents, 1030);
   assert.equal(
     priceCart([{ productId: "friet-rombautje", quantity: 2 }]).totalCents,
-    2140,
+    2190,
   );
   assert.throws(() => priceCart([]));
   assert.throws(() => priceCart([{ productId: "fake", quantity: 1 }]));
@@ -169,7 +169,7 @@ test("kiosk confirmation reserves only; collection and whole-trailer exit place 
   await alice.mutation(fn("reserve"), { session: "a", cart });
   let s = await alice.query(world, {});
   assert.equal(s.me.phase, "walk-truck");
-  assert.equal(s.me.totalCents, 980);
+  assert.equal(s.me.totalCents, 1030);
   assert.equal(s.orders.length, 0);
   await alice.mutation(fn("reserve"), { session: "a", cart });
   assert.equal(
@@ -228,8 +228,8 @@ test("kiosk confirmation reserves only; collection and whole-trailer exit place 
   s = await alice.query(world, {});
   assert.equal(s.me.phase, "complete");
   assert.equal(s.orders.length, 1);
-  assert.equal(s.orders[0].feeCents, 100);
-  assert.equal(s.orders[0].totalCents, 980);
+  assert.equal(s.orders[0].feeCents, 150);
+  assert.equal(s.orders[0].totalCents, 1030);
   assert.equal(s.me.parking, null);
   await alice.mutation(fn("join"), { session: "again" });
   assert.equal((await alice.query(world, {})).me.phase, "complete");
@@ -277,7 +277,7 @@ test("recovery preserves the reserved price; leaving without a trailer cannot pl
   await alice.mutation(fn("recover"), { session: "a" });
   const s = await alice.query(world, {});
   assert.equal(s.me.phase, "pickup");
-  assert.equal(s.me.totalCents, 980);
+  assert.equal(s.me.totalCents, 1030);
   assert.equal(
     exited({
       ...s.me,
@@ -309,7 +309,7 @@ test("1+1 offers preserve paid prices and record free portions only for regular 
     [2, 1, 0],
   );
   assert.equal(priced.subtotalCents, 1400);
-  assert.equal(priced.totalCents, 1500);
+  assert.equal(priced.totalCents, 1550);
   assert.deepEqual(
     MENU.filter((p) => p.promotion).map((p) => p.id),
     ["frikandel", "kipkorn"],
@@ -336,7 +336,7 @@ test("backend freezes free portions at reservation and preserves them in placed 
   const s = await alice.query(world, {});
   assert.equal(s.orders[0].lines[0].quantity, 2);
   assert.equal(s.orders[0].lines[0].freeQuantity, 2);
-  assert.equal(s.orders[0].totalCents, 900);
+  assert.equal(s.orders[0].totalCents, 950);
 });
 
 test("pickup accepts an angled reverse approach but rejects forward ramming and blocks trailer penetration", () => {
