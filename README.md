@@ -1,3 +1,11 @@
+# Perifoodtruck
+
+Independent copy of ThomasStock/peritruck, based on commit 3af6c5f.
+
+Production: https://foodtruck.placeholder.app
+
+Vercel builds `main` with `npm run build`. The leaderboard uses browser-local storage until a separate Convex backend is configured.
+
 # Peripass yard demo
 
 Version 2 of [ThomasStock/peritruck](https://github.com/ThomasStock/peritruck), the game originally served at [truck.placeholder.app](https://truck.placeholder.app/).
