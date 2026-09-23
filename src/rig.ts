@@ -63,6 +63,8 @@ export class DriverRig {
       if (s.phase === "kiosk")
         facing = Math.atan2(KIOSK.x - d.x, KIOSK.z - d.z);
       else if (command > 0.1) facing = Math.atan2(input.walkX, input.walkZ);
+      else if (moved > 1e-4 && this.last)
+        facing = Math.atan2(d.x - this.last.x, d.z - this.last.z);
     }
     this.last = { x: d.x, z: d.z };
     // Fixed-step simulation moves in quanta; a short window hides empty frames.

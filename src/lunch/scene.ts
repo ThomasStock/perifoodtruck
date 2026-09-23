@@ -1,3 +1,4 @@
+import { RemoteMotion } from "./remote-motion";
 import { BurgerLitter } from "./burger-litter";
 import type { Burger } from "./burgers";
 import * as THREE from "three";
@@ -5,7 +6,7 @@ import { createBurgerSign } from "./burger-sign";
 import { YardScene } from "../scene";
 import { DriverRig } from "../rig";
 import { RigWheels } from "../wheels";
-import { blendTruck, createState, type State } from "../game/simulation";
+import { idleInput, createState, type State } from "../game/simulation";
 import {
   attached,
   objective,
@@ -117,6 +118,7 @@ type Remote = {
   rig: DriverRig;
   wheels: RigWheels;
   pose: Player["truck"];
+  motion: RemoteMotion;
 };
 export class LunchScene {
   base: YardScene;
@@ -300,9 +302,9 @@ export class LunchScene {
       let v = this.remotes.get(p.email);
       if (!v) {
         const root = new THREE.Group(),
-          cab = clone(this.base.tractor, 0.25),
-          trailer = clone(this.base.trailer, 0.25),
-          driver = clone(this.base.driver, 0.25),
+          cab = clone(this.base.tractor, 0.38),
+          trailer = clone(this.base.trailer, 0.38),
+          driver = clone(this.base.driver, 0.55),
           name = label(p.email);
         const rig = new DriverRig(driver);
         rig.bind();
@@ -319,10 +321,12 @@ export class LunchScene {
           rig,
           wheels,
           pose: { ...p.truck },
+          motion: new RemoteMotion(),
         };
         this.remotes.set(p.email, v);
       }
-      v.pose = blendTruck(v.pose, p.truck, 1 - Math.exp(-12 * dt));
+      const smoothed = v.motion.sample(p, performance.now());
+      v.pose = smoothed.truck;
       v.cab.position.set(v.pose.x, 0, v.pose.z);
       v.cab.rotation.y = v.pose.heading;
       v.trailer.position.copy(v.cab.position);
@@ -333,8 +337,13 @@ export class LunchScene {
         const wheel = v.cab.getObjectByName(name);
         if (wheel) wheel.rotation.y = v.pose.steer;
       }
-      v.rig.update(this.sceneState({ ...p, truck: v.pose }), input, dt, false);
-      const actor = walking(p) ? p.driver : v.pose;
+      v.rig.update(
+        this.sceneState({ ...p, ...smoothed }),
+        idleInput(),
+        dt,
+        false,
+      );
+      const actor = walking(p) ? smoothed.driver : v.pose;
       v.name.position.set(actor.x, walking(p) ? 2.8 : 4.8, actor.z);
       v.name.material.opacity = 0.85;
     }
