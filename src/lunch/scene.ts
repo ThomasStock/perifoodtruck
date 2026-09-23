@@ -14,30 +14,60 @@ import {
   type Input,
   type Point,
 } from "./model";
-function label(text: string, width = 7) {
+function label(email: string, own = false, others = 0) {
   const canvas = document.createElement("canvas");
-  canvas.width = 1024;
-  canvas.height = 128;
   const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#153e39e6";
+  const at = email.lastIndexOf("@");
+  const title = own ? "Your trailer" : email.slice(0, at > 0 ? at : undefined);
+  const detail = own ? email : at > 0 ? email.slice(at) : "Lunch driver";
+  const suffix = others ? `  ·  +${others} here` : "";
+  ctx.font = "500 24px system-ui";
+  const width = Math.min(
+    540,
+    Math.max(220, ctx.measureText(detail + suffix).width + 58),
+  );
+  ctx.font = "600 30px system-ui";
+  canvas.width = Math.max(
+    width,
+    Math.min(540, ctx.measureText(title).width + 66),
+  );
+  canvas.height = 112;
+  ctx.fillStyle = "rgba(255,255,255,0.94)";
+  ctx.strokeStyle = own ? "#80c6b6" : "#d5dfda";
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(2, 2, 1020, 124, 30);
+  ctx.roundRect(2, 2, canvas.width - 4, 96, 20);
   ctx.fill();
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "600 48px system-ui";
-  ctx.textAlign = "center";
+  ctx.stroke();
+  ctx.fillStyle = own ? "#009b80" : "#849c94";
+  ctx.beginPath();
+  ctx.arc(25, 34, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#21483f";
+  ctx.font = "600 30px system-ui";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, 512, 64, 970);
+  ctx.fillText(title, 42, 34, canvas.width - 62);
+  ctx.fillStyle = "#698177";
+  ctx.font = "500 24px system-ui";
+  ctx.fillText(detail + suffix, 22, 72, canvas.width - 44);
+  // A small pointer anchors the tag to its vehicle, without a floating bar.
+  ctx.fillStyle = own ? "#80c6b6" : "#d5dfda";
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2 - 6, 100);
+  ctx.lineTo(canvas.width / 2, 108);
+  ctx.lineTo(canvas.width / 2 + 6, 100);
+  ctx.fill();
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({
       map: texture,
       depthTest: false,
+      depthWrite: false,
       transparent: true,
     }),
   );
-  sprite.scale.set(width, width / 8, 1);
+  sprite.scale.set(canvas.width / 110, canvas.height / 110, 1);
   return sprite;
 }
 function tint(root: THREE.Object3D, opacity: number) {
@@ -282,8 +312,8 @@ export class LunchScene {
       }
       v.rig.update(this.sceneState({ ...p, truck: v.pose }), input, dt, false);
       const actor = walking(p) ? p.driver : v.pose;
-      v.name.position.set(actor.x, 7, actor.z);
-      v.name.material.opacity = 0.55;
+      v.name.position.set(actor.x, walking(p) ? 2.8 : 4.8, actor.z);
+      v.name.material.opacity = 0.85;
     }
     for (const [email, v] of this.remotes)
       if (!visible.has(email)) {
@@ -292,10 +322,18 @@ export class LunchScene {
         this.remotes.delete(email);
       }
     const parkedNow = new Set<string>(),
-      stack = new Map<number, number>();
+      stack = new Set<number>();
+    const bayCounts = new Map<number, number>();
     for (const p of [
       ...players.filter((p) => p.email !== me?.email),
       ...(me ? [me] : []),
+    ]) {
+      if (p.parking !== null && ["walk-truck", "pickup"].includes(p.phase))
+        bayCounts.set(p.parking, (bayCounts.get(p.parking) ?? 0) + 1);
+    }
+    for (const p of [
+      ...(me ? [me] : []),
+      ...players.filter((p) => p.email !== me?.email),
     ]) {
       if (p.parking === null || !["walk-truck", "pickup"].includes(p.phase))
         continue;
@@ -311,15 +349,26 @@ export class LunchScene {
         );
         trailer.position.set(0, 0, 0);
         trailer.rotation.set(0, 0, 0);
-        group.add(trailer, label(p.email, 8));
+        group.add(trailer);
         this.base.scene.add(group);
         this.parked.set(p.email, group);
       }
       group.position.set(bay.x, 0, bay.z);
       group.rotation.y = 0;
-      const index = stack.get(bay.id) ?? 0;
-      stack.set(bay.id, index + 1);
-      group.children[1].position.set(0, 6 + index * 1.5, -5);
+      const count = (bayCounts.get(bay.id) ?? 1) - 1;
+      const tagKey = `${p.email}:${count}:${p.email === me?.email}`;
+      if (group.userData.tagKey !== tagKey) {
+        const old = group.children[1];
+        if (old) {
+          group.remove(old);
+          dispose(old);
+        }
+        group.add(label(p.email, p.email === me?.email, count));
+        group.userData.tagKey = tagKey;
+      }
+      group.children[1].position.set(0, 5.5, -5);
+      group.children[1].visible = !stack.has(bay.id);
+      stack.add(bay.id);
     }
     for (const [email, group] of this.parked)
       if (!parkedNow.has(email)) {
