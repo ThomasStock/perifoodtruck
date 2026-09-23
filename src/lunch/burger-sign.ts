@@ -1,33 +1,20 @@
 import * as THREE from "three";
 
-/** A low-poly roadside burger, built in the yard's own visual style. */
+/** A low-poly rooftop burger, built in the yard's own visual style. */
 export function createBurgerSign() {
   const root = new THREE.Group();
   root.name = "lunch-burger-sign";
-  root.position.set(-43, 0, 31);
+  root.position.set(-41, 0, 21);
   const material = (color: string) =>
     new THREE.MeshStandardMaterial({
       color,
       roughness: 0.85,
       flatShading: true,
     });
-  const pole = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.22, 0.28, 6, 12),
-    material("#32675d"),
-  );
-  pole.position.y = 3;
-  pole.castShadow = true;
-  root.add(pole);
-  const foot = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.85, 1, 0.35, 12),
-    material("#d4d9cf"),
-  );
-  foot.position.y = 0.175;
-  root.add(foot);
   const burger = new THREE.Group();
   burger.name = "rotating-hamburger";
-  burger.position.y = 6;
-  burger.rotation.z = -0.1;
+  // Roof top is 3.885m; the lower bun extends 0.325m below its centre.
+  burger.position.y = 4.21;
   root.add(burger);
   const layer = (geometry: THREE.BufferGeometry, color: string, y: number) => {
     const mesh = new THREE.Mesh(geometry, material(color));
