@@ -581,3 +581,18 @@ test("shared burgers require walking, reach all players, and cleanup removes onl
     /another tab/,
   );
 });
+
+test("start over resets an empty run without signing out or affecting another player", async () => {
+  const { t, alice } = setup();
+  await alice.mutation(fn("join"), { session: "reset" });
+  await put(t, "alice@example.com", {
+    phase: "walk-kiosk",
+    driver: { x: 10, z: 10 },
+  });
+  await alice.mutation(fn("cancelOrder"), { session: "reset" });
+  const me = (await alice.query(world, {})).me;
+  assert.equal(me.phase, "arrive");
+  assert.deepEqual(me.truck, spawn());
+  assert.equal(me.lines.length, 0);
+  await alice.mutation(fn("recover"), { session: "reset" });
+});

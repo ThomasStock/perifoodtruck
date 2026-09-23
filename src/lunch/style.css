@@ -1090,18 +1090,22 @@ dialog ol {
   gap: 12px;
   margin-top: 24px;
 }
-#confirm-cancel {
+#confirm-cancel,
+#confirm-reset {
   background: #c93636;
   border-color: #c93636;
 }
-#confirm-cancel:hover {
+#confirm-cancel:hover,
+#confirm-reset:hover {
   background: #ac2929;
   border-color: #ac2929;
 }
-#cancel-dialog {
+#cancel-dialog,
+#reset-dialog {
   max-width: 480px;
 }
-#cancel-dialog p {
+#cancel-dialog p,
+#reset-dialog p {
   line-height: 1.6;
 }
 

@@ -212,7 +212,6 @@ export const cancelOrder = mutation({
       .query("lunchOrders")
       .withIndex("by_subject", (q) => q.eq("subject", p.subject))
       .unique();
-    if (!order && !p.lines.length) return;
     if (order) await ctx.db.delete(order._id);
     await ctx.db.patch(p._id, publicPlayer(newPlayer(p.email)));
   },
