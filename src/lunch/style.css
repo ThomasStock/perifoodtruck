@@ -1206,3 +1206,21 @@ dialog ol {
     font-size: 12px;
   }
 }
+
+/* A quiet, unlabeled minimap on every screen size. */
+#map-button {
+  width: 110px;
+  padding: 6px;
+  border-radius: 15px;
+}
+#map-button canvas {
+  display: block;
+  margin: 0;
+}
+@media (max-width: 760px), (pointer: coarse) and (max-width: 1100px) {
+  #map-button {
+    width: 80px;
+    padding: 4px;
+    border-radius: 12px;
+  }
+}

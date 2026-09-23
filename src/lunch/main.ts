@@ -48,7 +48,7 @@ $("app").innerHTML = `<div id="world"></div>
 <section id="login" class="welcome panel"><div class="eyebrow">YOUR LUNCH. YOUR DRIVE.</div><h1>Park your truck.<br><em>Pick your lunch.</em></h1><p>Order at the kiosk, collect your trailer and drive out of the yard to place your order.</p><div class="intro-steps"><span>01 · KIOSK</span><span>02 · PICKUP</span><span>03 · EXIT</span></div><div id="google-signin"></div><p id="setup-note">Loading the yard…</p><button id="preview" class="primary" hidden>Local preview ↗</button><small>Your Google email appears on your truck and trailer.</small></section>
 <aside id="mission" class="panel" hidden><div id="step" class="eyebrow"></div><h2 id="objective"></h2><p id="hint"></p><ol class="progress"><li>Parking</li><li>Kiosk</li><li>Pickup</li><li>Exit</li></ol><div id="pickup-location"></div></aside>
 <aside id="receipt" class="panel" hidden><button id="lunch-summary" aria-label="View your lunch details"><span>Your lunch</span><strong id="lunch-summary-total"></strong><span aria-hidden="true">⌄</span></button><div class="eyebrow">YOUR LUNCH</div><h3 id="receipt-status">Nothing ordered yet</h3><div id="receipt-lines"></div><div id="receipt-total"></div><p id="receipt-note"></p><button id="cancel-order" class="cancel-order" hidden>Cancel order</button></aside>
-<button id="map-button" class="map panel" hidden aria-label="Yard overview"><div class="eyebrow">YARD OVERVIEW ↗</div><canvas id="map" width="320" height="330"></canvas><small>● YOU <span>○ GHOSTS</span></small></button>
+<button id="map-button" class="map panel" hidden aria-label="Yard overview"><canvas id="map" width="320" height="330"></canvas></button>
 <div id="target-label" hidden></div><div id="action-wrap" hidden><button id="action" class="primary"><kbd>E</kbd><span id="action-text"></span></button></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
 <footer id="controls" hidden><div><span><kbd>WASD</kbd> / <kbd>↑↓←→</kbd> Drive & walk</span><span><kbd>SPACE</kbd> <span id="space-label">Turbo</span></span><span><kbd>SHIFT</kbd> Precision</span><button id="recover">Recover truck</button><button id="signout">Sign out</button></div><strong><b id="speed">0</b><small>KM/H</small></strong></footer>
@@ -426,17 +426,16 @@ function drawMap() {
     c.fillStyle = "#234e44";
     c.font = "10px system-ui";
     c.textAlign = "center";
-    c.fillText(`P0${b.id + 1}`, x(b.x), z(b.z + 5));
   }
   c.fillStyle = "#d0a854";
   c.fillRect(x(PARK.x) - 6, z(PARK.z) - 12, 12, 26);
   c.fillStyle = "#244e42";
   c.fillRect(x(KIOSK.x) - 3, z(KIOSK.z) - 3, 6, 6);
-  c.fillText("K", x(KIOSK.x) - 10, z(KIOSK.z));
+
   c.fillStyle = "#00a990";
   c.fillRect(x(EXIT.x), z(EXIT.z) - 12, 34, 24);
   c.fillStyle = "#fff";
-  c.fillText("EXIT →", x(EXIT.x) + 17, z(EXIT.z) + 3);
+
   for (const p of [
     ...state.players.filter(
       (p) => p.email !== state!.me.email && Date.now() - p.updatedAt < 15000,
