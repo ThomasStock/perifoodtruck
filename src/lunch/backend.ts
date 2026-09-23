@@ -161,6 +161,7 @@ type GoogleIdentity = {
   }): void;
   renderButton(element: HTMLElement, options: Record<string, unknown>): void;
   disableAutoSelect(): void;
+  prompt(): void;
 };
 declare global {
   interface Window {
@@ -171,6 +172,7 @@ export async function googleButton(
   element: HTMLElement,
   clientId: string,
   callback: (token: string) => void,
+  autoSignIn = false,
 ) {
   if (!window.google)
     await new Promise<void>((resolve, reject) => {
@@ -189,7 +191,7 @@ export async function googleButton(
   window.google!.accounts.id.initialize({
     client_id: clientId,
     callback: (r) => callback(r.credential),
-    auto_select: false,
+    auto_select: true,
   });
   window.google!.accounts.id.renderButton(element, {
     locale: "en",
@@ -198,4 +200,5 @@ export async function googleButton(
     shape: "pill",
     width: 300,
   });
+  if (autoSignIn) window.google!.accounts.id.prompt();
 }

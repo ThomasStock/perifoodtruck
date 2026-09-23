@@ -7,12 +7,18 @@ import ts from "typescript";
 import { JSDOM } from "jsdom";
 import { preview } from "../src/lunch/backend";
 
-async function game() {
+async function game(auth?: {
+  saved?: Record<string, string>;
+  reject?: boolean;
+}) {
+  let autoSignIn = false;
   const dom = new JSDOM('<main id="app"></main>', {
     url: "http://localhost/?preview=kiosk",
     pretendToBeVisual: true,
   });
   const { window } = dom;
+  for (const [key, value] of Object.entries(auth?.saved ?? {}))
+    window.localStorage.setItem(key, value);
   Object.defineProperty(globalThis, "localStorage", {
     value: window.localStorage,
     configurable: true,
@@ -39,7 +45,17 @@ async function game() {
     setTimeout: () => 0,
     clearTimeout: () => {},
     requestAnimationFrame: () => 0,
-    importMeta: { env: { DEV: true } },
+    importMeta: {
+      env: {
+        DEV: true,
+        ...(auth
+          ? {
+              VITE_CONVEX_URL: "https://test.convex.cloud",
+              VITE_GOOGLE_CLIENT_ID: "test-client",
+            }
+          : {}),
+      },
+    },
     exports: {},
     require: (id: string) => {
       if (id.endsWith(".css")) return {};
@@ -54,7 +70,26 @@ async function game() {
             }
           },
         };
-      if (id === "./backend") return { preview };
+      if (id === "./backend")
+        return {
+          preview,
+          connect: async (
+            _url: string,
+            _token: string,
+            receive: Parameters<typeof preview>[0],
+          ) => {
+            if (auth?.reject) throw new Error("Rejected credential");
+            return preview(receive);
+          },
+          googleButton: async (
+            _element: unknown,
+            _clientId: string,
+            _callback: unknown,
+            automatic: boolean,
+          ) => {
+            autoSignIn = automatic;
+          },
+        };
       return require(id);
     },
   });
@@ -73,8 +108,8 @@ async function game() {
   );
   await new Promise<void>((resolve) => setImmediate(resolve));
   const run = (code: string) => runInContext(code, context);
-  await run("start()");
-  return { dom, run, doc: window.document };
+  if (!auth) await run("start()");
+  return { dom, run, doc: window.document, autoSignIn };
 }
 test("UI: kiosk totals include one fee, reservation closes kiosk without placing order", async () => {
   const { dom, run, doc } = await game();
@@ -134,4 +169,62 @@ test("UI: kiosk totals include one fee, reservation closes kiosk without placing
   );
   dom.window.close();
   delete (globalThis as { localStorage?: unknown }).localStorage;
+});
+
+test("UI: successful Google sign-in survives reload; explicit sign-out forgets it", async () => {
+  const first = await game({});
+  const token = `header.${Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 })).toString("base64url")}.signature`;
+  await first.run(`start(${JSON.stringify(token)})`);
+  assert.equal(first.doc.getElementById("login")!.hidden, true);
+  const saved = Object.fromEntries(
+    Object.entries(first.dom.window.localStorage),
+  );
+  const reloaded = await game({ saved });
+  assert.equal(
+    reloaded.doc.getElementById("login")!.hidden,
+    true,
+    "reload should restore sign-in",
+  );
+  await reloaded.run("signout()");
+  const signedOut = await game({
+    saved: Object.fromEntries(Object.entries(reloaded.dom.window.localStorage)),
+  });
+  assert.equal(signedOut.doc.getElementById("login")!.hidden, false);
+  first.dom.window.close();
+  reloaded.dom.window.close();
+  signedOut.dom.window.close();
+});
+
+test("UI: expired credentials request returning-user sign-in instead of restoring stale auth", async () => {
+  const token = `header.${Buffer.from(JSON.stringify({ exp: 1 })).toString("base64url")}.signature`;
+  const app = await game({
+    saved: {
+      "lunch-google-credential": token,
+      "lunch-google-returning": "true",
+    },
+  });
+  assert.equal(app.doc.getElementById("login")!.hidden, false);
+  assert.equal(app.autoSignIn, true);
+  assert.equal(
+    app.dom.window.localStorage.getItem("lunch-google-credential"),
+    null,
+  );
+  app.dom.window.close();
+});
+test("UI: rejected saved credentials leave sign-in available and clear the stale token", async () => {
+  const token = `header.${Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 })).toString("base64url")}.signature`;
+  const app = await game({
+    reject: true,
+    saved: {
+      "lunch-google-credential": token,
+      "lunch-google-returning": "true",
+    },
+  });
+  assert.equal(app.doc.getElementById("login")!.hidden, false);
+  assert.equal(app.autoSignIn, true);
+  assert.equal(
+    app.dom.window.localStorage.getItem("lunch-google-credential"),
+    null,
+  );
+  app.dom.window.close();
 });

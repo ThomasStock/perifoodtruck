@@ -5,6 +5,13 @@ import "./style.css";
 import { LunchScene } from "./scene";
 import { connect, preview, googleButton, type Backend } from "./backend";
 import {
+  savedCredential,
+  rememberCredential,
+  returningUser,
+  clearCredential,
+  forgetSignIn,
+} from "./auth-session";
+import {
   CATEGORIES,
   MENU,
   euro,
@@ -122,7 +129,7 @@ async function start(token?: string) {
     backend = token
       ? await connect(import.meta.env.VITE_CONVEX_URL, token, receive, (e) => {
           toast(message(e));
-          signout();
+          signout(false);
         })
       : preview(
           receive,
@@ -138,6 +145,7 @@ async function start(token?: string) {
     } catch {
       cart = [];
     }
+    if (token) rememberCredential(token);
     $("login").hidden = true;
     for (const id of ["mission", "receipt", "map-button", "controls"])
       $(id).hidden = false;
@@ -145,6 +153,7 @@ async function start(token?: string) {
     paint();
     if ($<HTMLDialogElement>("kiosk-dialog").open) renderMenu();
   } catch (e) {
+    if (token) clearCredential();
     $("setup-note").textContent = message(e);
   } finally {
     busy = false;
@@ -195,13 +204,15 @@ async function action(
     $<HTMLButtonElement>("reserve").disabled = cart.length === 0;
   }
 }
-function signout() {
+function signout(explicit = true) {
+  clearCredential();
+  if (explicit) forgetSignIn();
   keys.clear();
   joystick.reset();
   backend?.close();
   backend = null;
   state = null;
-  window.google?.accounts.id.disableAutoSelect();
+  if (explicit) window.google?.accounts.id.disableAutoSelect();
   for (const d of document.querySelectorAll("dialog")) d.close();
   $("login").hidden = false;
   for (const id of [
@@ -430,7 +441,7 @@ function drawMap() {
   }
 }
 $("preview").onclick = () => void start();
-$("signout").onclick = signout;
+$("signout").onclick = () => signout();
 $("action").onclick = () => void action("interact");
 $("cancel-order").onclick = () => {
   keys.clear();
@@ -546,7 +557,7 @@ function frame(now: number) {
     )
       void flush().catch((e) => {
         toast(message(e));
-        signout();
+        signout(false);
       });
     if (now - lastPaint > 100) {
       paint();
@@ -577,15 +588,19 @@ async function boot() {
   $("preview").hidden = !(
     import.meta.env.DEV || import.meta.env.VITE_ENABLE_PREVIEW === "true"
   );
-  if (configured)
+  if (configured) {
+    const saved = savedCredential();
+    if (saved) await start(saved);
     try {
       await googleButton(
         $("google-signin"),
         import.meta.env.VITE_GOOGLE_CLIENT_ID,
         (token) => void start(token),
+        !$("login").hidden && returningUser(),
       );
     } catch (e) {
-      $("setup-note").textContent = message(e);
+      if (!$("login").hidden) $("setup-note").textContent = message(e);
     }
+  }
 }
 void boot();

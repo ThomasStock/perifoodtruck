@@ -176,6 +176,7 @@ type GoogleIdentity = {
   }): void;
   renderButton(element: HTMLElement, options: Record<string, unknown>): void;
   disableAutoSelect(): void;
+  prompt(): void;
 };
 declare global {
   interface Window {
