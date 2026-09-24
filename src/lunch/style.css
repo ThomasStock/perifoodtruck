@@ -11,10 +11,16 @@
 body {
   margin: 0;
   overflow: hidden;
+  /* Repeated game taps must not trigger browser double-tap zoom. */
+  touch-action: manipulation;
 }
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 button {
   font: inherit;
@@ -1305,4 +1311,9 @@ dialog ol {
     padding: 8px 10px;
     font-size: 11px;
   }
+}
+
+/* Hold controls own the gesture, including walking turbo outside #touch. */
+button[data-key] {
+  touch-action: none;
 }
